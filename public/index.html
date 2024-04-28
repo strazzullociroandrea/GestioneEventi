@@ -113,6 +113,16 @@
           <img src="./assets/immaginiDocumentazione/TPS_gestione_eventi.png" alt="ER">
           
         </section>
+<!--parte di ipotesi dell'infrastruttura
+	      <section id="ipotesi_infrastruttura">
+          <h2>Ipotesi Infrastruttura</h2>
+          <p>
+		  Per far funzionare l’applicazione avremo bisogno di un database, nel quale salvare i dati relativi agli utenti e agli eventi creati da essi, di Nodejs per sviluppare la nostra applicazione ed eseguirla, Git come metodo per salvare man mano i nostri progressi.
+Inoltre ovviamente avremo bisogno di una Ram sulla quale sono memorizzate le informazioni di cui un programma ha bisogno durante l'esecuzione, un server in cloud, sempre per la memorizzazione dati, sulla quale potremo mettere dei dati ogni tanto, così nell’eventualità di una perdita dei dati su Git avremo un backup più o meno aggiornato, potremo inserire dei file di configurazione per assicurarsi che utenti indesiderati non riescano a modificare i dati sul database, poiché esso gestisce i permessi su di esso, mentre per la nostra applicazione potremo inviare i nostri dati tramite post, essendo un po’ più sicura della get, inoltre come server web utilizzeremo Nginx  perchè con lui possiamo aprire solo una porta e reindirizzerà da solo le varie richieste alle porte interne corrispondenti, sul server web installeremo linux, poiché più facile da gestire.
+
+	  </p>
+          
+        </section>
         
 		<hr class="divider">
 
