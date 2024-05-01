@@ -132,3 +132,4 @@ package-lock.json
 conf.json
 node_modules
 .DS_Store
+ca.pem
