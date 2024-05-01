@@ -6,6 +6,7 @@
     "http": "^0.0.1-security",
     "mysql2": "^3.9.7",
     "nodemailer": "^6.9.13",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "socket.io": "^4.7.5"
   }
 }
