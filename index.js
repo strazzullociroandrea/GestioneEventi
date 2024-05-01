@@ -24,7 +24,7 @@ const io = new Server(server);
             const rsp = await connectionToDB.executeQuery("SELECT * FROM evento WHERE id=?",[idEvento]);
             io.to(socket.id).emit("resultGetEvento", {result: rsp});
         });
-        //manca la possibilità di cambiare/aggiungere immagini
+        //manca la possibilità di cambiare/aggiungere immagini e gli invitati
         socket.on("updateEvento", async(dizionario)=>{
             const {id, dataOraScadenza, tipologia, stato, titolo, descrizione, posizione} = dizionario;
             if(id != "" ){
