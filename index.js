@@ -24,6 +24,48 @@ const io = new Server(server);
             const rsp = await connectionToDB.executeQuery("SELECT * FROM evento WHERE id=?",[idEvento]);
             io.to(socket.id).emit("resultGetEvento", {result: rsp});
         });
+        //manca la possibilità di cambiare/aggiungere immagini
+        socket.on("updateEvento", async(dizionario)=>{
+            const {id, dataOraScadenza, tipologia, stato, titolo, descrizione, posizione} = dizionario;
+            if(id != "" ){
+                let query = "UPDATE evento SET ";
+                const array = [];
+                if(dataOraScadenza != ""){
+                    query += " dataOraScadenza = ?";
+                    array.push(dataOraScadenza);
+                }
+                if(tipologia != ""){
+                    query += " tipologia = ?";
+                    array.push(tipologia);
+                }
+                if(stato != ""){
+                    query += " stato = ?";
+                    array.push(stato);
+                }
+                if(titolo != ""){
+                    query += " titolo = ?";
+                    array.push(titolo);
+                }
+                if(descrizione != ""){
+                    query += " descrizione = ?";
+                    array.push(descrizione);
+                }
+                if(posizione != ""){
+                    query += " posizione = ?";
+                    array.push(posizione);
+                }
+                query += "WHERE id=? SET";
+                if(array.length > 0){
+                    const rsp = await connectionToDB.executeQuery(query, array);
+                    io.to(socket.id).emit("resultUpdateEvento", {result: rsp});
+                }else{
+                    io.to(socket.id).emit("resultUpdateEvento", {result: false});
+                }
+            }else{
+                io.to(socket.id).emit("resultUpdateEvento", {result: "Id evento non settato"});
+            }
+            
+        });
     });
     server.listen(conf.port, () => {
         console.log("---> server running on port " + conf.port);
