@@ -16,7 +16,35 @@ app.use(
 app.use("/", express.static(path.join(__dirname, "public")));
 const server = http.createServer(app);
 const io = new Server(server);
-
+const associazioni = []; //contiene {email: email, socket: socket.id}
+/**
+ * Funzione per inviare agli utenti invitati la notifica di invito
+ * @param {*} array array di utenti invitati all'evento
+ * @param {*} evento evento in questione
+ * @param {*} ev evento della socket
+ * @returns promise
+ */
+const invita = (array, evento, ev) => {
+    return new Promise((resolve, reject) => {
+        array.forEach(utente => {
+            const associazione = associazioni.find(element => {
+                return element?.email == utente;
+            });
+            if (associazione && associazione != null) {
+                io.to(associazione.socket).emit(ev, { "message": "Sei stato invitato ad un nuovo evento", evento });
+            } else {
+                //gestione eventi utente invitato - sospesi per offline
+                const user = eventiSospesi.findIndex(element => element?.email == utente);
+                if (user != -1) {
+                    eventiSospesi[user]['eventi'].push(evento);
+                } else {
+                    eventiSospesi.push({ email: utente, eventi: [evento] });
+                }
+            }
+        })
+        resolve();
+    })
+}
 (() => {
     const connectionToDB = db(conf, fs);
     io.on("connection", (socket) => {
