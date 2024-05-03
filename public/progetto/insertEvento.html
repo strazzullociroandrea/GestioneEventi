@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Temp</title>
+</head>
+<body>
+    <div>
+        <form onsubmit="return false">
+            <script>const today = new Date().toISOString().slice(0, 16);</script>
+            <input type="datetime-local" min="%s" id="dataOraScadenza" placeholder="Inserisci la data e l'ora dell'evento" required>
+            <script>document.getElementById("dataOraScadenza").setAttribute("min", today);</script>
+            <input type="text" id="tipologia" placeholder="Inserisci la tipologia dell'evento" required>
+            <select type="select" id="stato" required>
+                <option value="" disabled selected>Inserire lo stato dell'evento</option>
+                <option value="In programma">In programma</option>
+                <option value="In corso">In corso</option>
+                <option value="In programma">Terminato</option>
+            </select>
+            <input type="text" id="titolo" placeholder="Inserisci il titolo dell'evento" required>
+            <input type="text" id="descrizione" placeholder="Inserisci la descrizione dell'evento" required>
+            <input type="text" id="posizione" placeholder="Inserisci la posizione dell'evento" required>
+            <input type="submit" id="inserisci" value="inserisci"/>
+        </form>
+    </div>
+    <script src="./insertEvento.js" type="module"></script>
+</body>
+</html>

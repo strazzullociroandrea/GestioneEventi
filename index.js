@@ -48,53 +48,74 @@ const invita = (array, evento, ev) => {
 (() => {
     const connectionToDB = db(conf, fs);
     io.on("connection", (socket) => {
-        socket.on("getEvento", async(idEvento)=>{
-            const rsp = await connectionToDB.executeQuery("SELECT * FROM evento WHERE id=?",[idEvento]);
-            io.to(socket.id).emit("resultGetEvento", {result: rsp});
+        socket.on("getEvento", async (idEvento) => {
+            const rsp = await connectionToDB.executeQuery("SELECT * FROM evento WHERE id=?", [idEvento]);
+            io.to(socket.id).emit("resultGetEvento", { result: rsp });
         });
         //manca la possibilità di cambiare/aggiungere immagini e gli invitati
-        socket.on("updateEvento", async(dizionario)=>{
-            const {id, dataOraScadenza, tipologia, stato, titolo, descrizione, posizione} = dizionario;
-            if(id != "" ){
+        socket.on("updateEvento", async (dizionario) => {
+            const { id, dataOraScadenza, tipologia, stato, titolo, descrizione, posizione } = dizionario;
+            if (id != "") {
                 let query = "UPDATE evento SET ";
                 const array = [];
-                if(dataOraScadenza != ""){
+                if (dataOraScadenza != "") {
                     query += " dataOraScadenza = ?";
                     array.push(dataOraScadenza);
                 }
-                if(tipologia != ""){
+                if (tipologia != "") {
                     query += " tipologia = ?";
                     array.push(tipologia);
                 }
-                if(stato != ""){
+                if (stato != "") {
                     query += " stato = ?";
                     array.push(stato);
                 }
-                if(titolo != ""){
+                if (titolo != "") {
                     query += " titolo = ?";
                     array.push(titolo);
                 }
-                if(descrizione != ""){
+                if (descrizione != "") {
                     query += " descrizione = ?";
                     array.push(descrizione);
                 }
-                if(posizione != ""){
+                if (posizione != "") {
                     query += " posizione = ?";
                     array.push(posizione);
                 }
                 query += "WHERE id=? SET";
-                if(array.length > 0){
+                if (array.length > 0) {
                     const rsp = await connectionToDB.executeQuery(query, array);
-                    io.to(socket.id).emit("resultUpdateEvento", {result: rsp});
-                }else{
-                    io.to(socket.id).emit("resultUpdateEvento", {result: false});
+                    io.to(socket.id).emit("resultUpdateEvento", { result: rsp });
+                } else {
+                    io.to(socket.id).emit("resultUpdateEvento", { result: false });
                 }
-            }else{
-                io.to(socket.id).emit("resultUpdateEvento", {result: "Id evento non settato"});
+            } else {
+                io.to(socket.id).emit("resultUpdateEvento", { result: "Id evento non settato" });
             }
-            
+
         });
     });
+
+    const insertEvent = (dict) => {
+        const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES (${dict.dataOraScadenza}, ${dict.tipologia}, ${dict.stato}, ${dict.titolo}, ${dict.descrizione}, ${dict.posizione}, ${dict.idUser})`;
+
+        return connectionToDB.executeQuery(sql);
+    };
+
+    app.post("/insertEvent", (req, res) => {
+        const event = req.body.event;
+        if (event.dataOraScadenza !== "" && event.tipologia !== "" && event.stato !== "" && event.titolo !== "" && event.descrizione !== "" && event.posizione !== "" && event.idUser) {
+            console.log("Event");
+            insertEvent(event)
+                .then((json) => {
+                    res.json({ result: "ok" });
+                })
+                .catch((error) => {
+                    res.json({ result: "error" });
+                });
+        };
+    });
+
     server.listen(conf.port, () => {
         console.log("---> server running on port " + conf.port);
     });
