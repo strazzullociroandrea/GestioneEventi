@@ -7,6 +7,10 @@ const fs = require("fs");
 const conf = JSON.parse(fs.readFileSync("conf.json"));
 const db = require("./server/db.js");
 const { Server } = require("socket.io");
+
+const bcrypt = require("bcrypt")
+const saltRounds = 10;
+
 app.use(bodyParser.json());
 app.use(
     bodyParser.urlencoded({
@@ -116,6 +120,97 @@ const invita = (array, evento, ev) => {
         };
     });
 
+
+  /**
+   * Gabriele -
+   * POST di registrazione utente
+   */
+
+
+  function validateUser(password, hash) {
+    return new Promise(function (resolve, reject){
+      bcrypt
+        .compare(password, hash)
+        .then(res => {
+          resolve(res)
+        })
+        .catch(err => console.error(err.message))        
+    })
+  }
+
+  app.post("/register", (req, res) => {
+    const { email, password, confirm_password } = req.body;
+    if(password!=confirm_password){
+      // password errate
+      res.json({ result: "errore - le password non coincidono" });
+    }
+
+    // Controllo che sia del Molinari
+    const splitted = email.split("@");
+    if (splitted[1] != "itis-molinari.eu"){
+      res.json( { result: "errore - email non valida - Non sei del nostro istituto!!!" } )
+    }
+
+    // Controllo che l'email non sia già stata registrata
+    const query = `SELECT * FROM user WHERE username=?`;
+    const rsp = connectionToDB.executeQuery(query, [email]).then(response => {
+      if(response.length>0){
+        res.json({ result: "errore - email già registrata" });
+      } else {
+        // Ok non è registrato
+
+        // Cripto la password
+        bcrypt
+        .hash(password, saltRounds)
+        .then(hashed_password => {
+          console.log('Hash ', hashed_password)
+          const query = `INSERT INTO user (username, password) VALUES (?, ?)`;
+          const rsp = connectionToDB.executeQuery(query, [email, hashed_password])
+                      .then(response=>{
+                        // TODO - invio mail di conferma
+                        res.json({ result: "ok" });
+                        console.log("response",response)
+
+                        validateUser(password, hashed_password).then(res=>{
+                          console.log("verifica vera ...",res)
+                          }
+                        );
+                      validateUser("errata", hashed_password).then(res=>{
+                          console.log("verifica errata ...",res)
+                          }
+                        );
+                      })
+                      .catch(err => console.error(err.message))        
+                    
+        });
+      }
+    });
+  });
+
+  
+  app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+    const query = `SELECT * FROM user WHERE username=?`;
+    connectionToDB.executeQuery(query, [email]).then(response => {
+      if(response.length>0){
+        const hashed_password = response[0].password;
+        validateUser(password, hashed_password)
+          .then(result=>{
+            if(result){
+              res.json("ok password corretta");
+            } else {
+              res.json("utente non riconosciuto")
+            }
+          }); 
+        }
+      })
+
+    });
+                                                                 
+
+  /**
+   * 
+   */
     server.listen(conf.port, () => {
         console.log("---> server running on port " + conf.port);
     });
