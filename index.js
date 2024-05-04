@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const conf = JSON.parse(fs.readFileSync("conf.json"));
 const db = require("./server/db.js");
+const emailer = require("./server/email.js");
 const { Server } = require("socket.io");
 
 const bcrypt = require("bcrypt");
@@ -201,6 +202,14 @@ const invita = (array, evento, ev) => {
             .executeQuery(query, [email, hashed_password])
             .then((response) => {
               // TODO - invio mail di conferma
+              
+              emailer.send(
+                conf,
+                "barbierigabriele@itis-molinari.eu",
+                "Registrazione Avvenuta con successo",
+                "Ciao <strong>"+email+ "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" + password,
+              );
+
               res.json({ result: "ok" });
             })
             .catch((err) => console.error(err.message));
@@ -242,6 +251,12 @@ const invita = (array, evento, ev) => {
             .executeQuery(query, [hashed_password])
             .then((response) => {
               // TODO - invio mail di conferma all'utente con la password presente in new_password
+              emailer.send(
+                conf,
+                "barbierigabriele@itis-molinari.eu",
+                "Password reimpostata",
+                "La tua nuova password è " + new_password,
+              );
 
               res.json({ "nuova password": new_password });
             })
@@ -252,6 +267,16 @@ const invita = (array, evento, ev) => {
         res.json("email o password errata");
       }
     });
+  });
+
+  app.get("/send", (req, res) => {
+    console.log("sending ... ");
+    emailer.send(
+      conf,
+      "barbierigabriele@itis-molinari.eu",
+      "prova2",
+      "mail di prova",
+    );
   });
 
   /**
