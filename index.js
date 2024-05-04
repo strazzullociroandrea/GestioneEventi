@@ -138,6 +138,11 @@ const queryGetUserIdOfEvent = (idEvent) => {
     return connectionToDB.executeQuery(sql);
 }
 
+const queryUtentiInvitati = (idEvent) => {
+    const sql = `SELECT invitare.idUser from invitare JOIN evento ON invitare.idEvento = evento.id WHERE invitare.idEvento =${idEvent}`;
+    return connectionToDB.executeQuery(sql);
+}
+
 app.post("/insertEvent", (req, res) => {
     const event = req.body.event;
     if (event.dataOraScadenza !== "" && event.tipologia !== "" && event.stato !== "" && event.titolo !== "" && event.descrizione !== "" && event.posizione !== "" && event.idUser) {
@@ -147,7 +152,7 @@ app.post("/insertEvent", (req, res) => {
                 res.json({ result: "ok" });
             })
             .catch((error) => {
-                res.json({ result: "error" });
+                res.json({ result: "errore nella insert dell'utente" });
             });
     };
 
@@ -161,7 +166,7 @@ app.post("/getAllUserEvents", (req, res) => {
                 res.json({ result: json });
             })
             .catch((error) => {
-                res.json({ result: "error" });
+                res.json({ result: "errore nella select degli eventi dell'utente: " + error });
             });
     };
 });
@@ -169,20 +174,42 @@ app.post("/getAllUserEvents", (req, res) => {
 app.post("/deleteEvento", (req, res) => {
     const event = req.body.event;
     if (event.idEvento !== "" && event.idUtente !== "") {
-        queryGetUserIdOfEvent(event.idEvento)
-            .then((json) => {
-                if (json[0].idUser == event.idUtente) {
-                    queryDeleteEvento(event)
-                        .then((json) => {
-                            res.json({ result: "ok" });
-                        })
-                        .catch((error) => {
-                            res.json({ result: "error" });
-                        });
-                }
+        queryUtentiInvitati(event.idEvento)
+            .then((result) => {
+                const array = [];
+                result.forEach((e) => {
+                    array.push(e.idUser);
+                });
+                invita(array, event.idEvento, "elimina")
+                    .then(() => {
+                        queryGetUserIdOfEvent(event.idEvento)
+                            .then((json) => {
+                                if (json[0].idUser == event.idUtente) {
+                                    queryDeleteEvento(event)
+                                        .then(() => {
+                                            res.json({ result: "ok" });
+                                        })
+                                        .catch((error) => {
+                                            res.json({ result: "errore nella delete: " + error });
+                                        });
+                                }
+                            })
+                            .catch((error) => {
+                                res.json({ result: "errore nella select del proprietario dell'evento: " + error });
+                            });
+                    })
+                    .catch((error) => {
+                        res.json({ result: "errore nella funzione invita: " + error });
+                    });
             })
-    };
+            .catch((error) => {
+                res.json({ result: "errore nelle select degli utenti invitati all'evento: " + error});
+            });
+    } else {
+        res.json({ result: "attributi non valorizzati"});
+    }
 });
+
 
 /**
  * Gabriele -

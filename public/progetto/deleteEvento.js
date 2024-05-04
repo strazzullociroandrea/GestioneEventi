@@ -2,6 +2,7 @@ const idEvento = document.getElementById('idEvento');
 const idUtenteEvento = document.getElementById('idUtenteEvento');
 const eliminaEvento = document.getElementById('eliminaEvento');
 const result = document.getElementById('result');
+const socket = io();
 
 const deleteEvento = (dict) => {
     return new Promise((resolve, reject) => {
@@ -33,3 +34,7 @@ eliminaEvento.onclick = () => {
     };
     deleteEvento(dict);
 }
+
+socket.on("elimina",(result)=>{
+    console.log(result);
+});

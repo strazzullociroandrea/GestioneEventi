@@ -41,6 +41,7 @@ const render = (array) => {
     <th>Stato</th>
     <th>Data e ora</th>
     <th>Posizione</th>
+    <th>Descrizione</th>
     </tr>`;
 
     const tbody = `<tr> 
@@ -50,6 +51,7 @@ const render = (array) => {
     <td>%STATO</td>
     <td>%DATAORA</td>
     <td>%POSIZIONE</td>
+    <td>%DESCRIZIONE</td>
     </tr>`;
 
     let html = thead;
@@ -57,7 +59,7 @@ const render = (array) => {
     array.forEach((e) => {
         const dateTime = new Date(e.dataOraScadenza).toLocaleString();
          html += tbody.replace("%CODICE", e.id).replace("%TITOLO", e.titolo).replace("%TIPOLOGIA", e.tipologia)
-        .replace("%STATO", e.stato).replace("%DATAORA", dateTime).replace("%POSIZIONE", e.posizione);
+        .replace("%STATO", e.stato).replace("%DATAORA", dateTime).replace("%POSIZIONE", e.posizione).replace("%DESCRIZIONE", e.descrizione);
     })
 
     table.innerHTML = html;
