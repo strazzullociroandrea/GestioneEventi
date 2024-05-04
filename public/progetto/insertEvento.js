@@ -5,6 +5,7 @@ const stato = document.getElementById('stato');
 const titolo = document.getElementById('titolo');
 const descrizione = document.getElementById('descrizione');
 const posizione = document.getElementById('posizione');
+const idUser = document.getElementById('idUser');
 
 const insertEvent = (dict) => {
     return new Promise((resolve, reject) => {
@@ -31,16 +32,13 @@ const insertEvent = (dict) => {
 
 inserisci.onclick = () => {
     const event = {
-        dataOraScadenzaScadenza: dataOraScadenza.value,
+        dataOraScadenza: dataOraScadenza.value,
         tipologia: tipologia.value,
         stato: stato.value,
         titolo: titolo.value,
         descrizione: descrizione.value,
         posizione: posizione.value,
+        idUser: idUser.value,
     };
-    console.log(event);
     insertEvent(event)
-        .then((response) => {
-            console.log(response);
-        });
 };

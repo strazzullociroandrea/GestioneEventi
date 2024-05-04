@@ -96,23 +96,67 @@ const invita = (array, evento, ev) => {
         });
     });
 
-    const insertEvent = (dict) => {
-        const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES (${dict.dataOraScadenza}, ${dict.tipologia}, ${dict.stato}, ${dict.titolo}, ${dict.descrizione}, ${dict.posizione}, ${dict.idUser})`;
-
+    const queryInsertEvent = (dict) => {
+        const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.stato}', '${dict.titolo}', '${dict.descrizione}', '${dict.posizione}', ${dict.idUser})`;
         return connectionToDB.executeQuery(sql);
     };
 
+    const queryGetAllUserEvents = (dict) => {
+        const sql = `SELECT * FROM evento WHERE idUser = ${dict.idUser}`;
+        return connectionToDB.executeQuery(sql);
+    };
+
+    const queryDeleteEvento = (dict) => {
+        const sql = `DELETE FROM evento WHERE id = ${dict.idEvento}`;
+        return connectionToDB.executeQuery(sql);
+    };
+
+    const queryGetUserIdOfEvent = (idEvent) => {
+        const sql = `SELECT idUser FROM evento WHERE id = ${idEvent}`;
+        return connectionToDB.executeQuery(sql);
+    }
+
     app.post("/insertEvent", (req, res) => {
         const event = req.body.event;
-        if (event.dataOraScadenza !== "" && event.tipologia !== "" && event.stato !== "" && event.titolo !== "" && event.descrizione !== "" && event.posizione !== "" && event.idUser) {
-            console.log("Event");
-            insertEvent(event)
+        if (event.dataOraScadenza !== "" && event.tipologia !== "" && event.stato !== "" && event.titolo !== "" && event.descrizione !== "" && event.posizione !== "" && event.idUser !== "") {
+            queryInsertEvent(event)
                 .then((json) => {
                     res.json({ result: "ok" });
                 })
                 .catch((error) => {
                     res.json({ result: "error" });
                 });
+        };
+    });
+
+    app.post("/getAllUserEvents", (req, res) => {
+        const event = req.body.event;
+        if (event.idUser !== "") {
+            queryGetAllUserEvents(event)
+                .then((json) => {
+                    res.json({ result: json });
+                })
+                .catch((error) => {
+                    res.json({ result: "error" });
+                });
+        };
+    });
+
+    app.post("/deleteEvento", (req, res) => {
+        const event = req.body.event;
+        if (event.idEvento !== "" && event.idUtente !== "") {
+            queryGetUserIdOfEvent(event.idEvento)
+                .then((json) => {
+                    if (json[0].idUser == event.idUtente) {
+                        queryDeleteEvento(event)
+                            .then((json) => {
+                                res.json({ result: "ok" });
+                            })
+                            .catch((error) => {
+                                res.json({ result: "error" });
+                            });
+                    }
+                })
         };
     });
 
