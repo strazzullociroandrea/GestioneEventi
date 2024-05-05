@@ -148,9 +148,12 @@ const invita = (array, evento, ev) => {
 
   /**
    * Gabriele -
-   * POST di registrazione utente
+   * POST di registrazione utente - login - reset password
    */
 
+  /**
+   * Controlla se la password fornita dall'utente coincide con quella del database
+   */
   function validateUser(password, hash) {
     return new Promise(function (resolve, reject) {
       bcrypt
@@ -162,6 +165,10 @@ const invita = (array, evento, ev) => {
     });
   }
 
+  /**
+   * Genera una nuova password casuale
+   */
+  
   function generateRandomString(iLen) {
     var sRnd = "";
     var sChrs = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
@@ -172,6 +179,10 @@ const invita = (array, evento, ev) => {
     return sRnd;
   }
 
+  /**
+   * Registrazione di un nuovo utente
+   */
+  
   app.post("/register", (req, res) => {
     const { email, password, confirm_password } = req.body;
     if (password != confirm_password) {
@@ -201,8 +212,7 @@ const invita = (array, evento, ev) => {
           connectionToDB
             .executeQuery(query, [email, hashed_password])
             .then((response) => {
-              // TODO - invio mail di conferma
-              
+              // Invio mail di conferma
               emailer.send(
                 conf,
                 "barbierigabriele@itis-molinari.eu",
@@ -218,6 +228,10 @@ const invita = (array, evento, ev) => {
     });
   });
 
+  /**
+   * Login utente
+   */
+  
   app.post("/login", (req, res) => {
     const { email, password } = req.body;
     const query = `SELECT * FROM user WHERE username=?`;
@@ -238,6 +252,9 @@ const invita = (array, evento, ev) => {
     });
   });
 
+  /**
+   * Reset della password
+   */
   app.post("/reset_password", (req, res) => {
     const { email } = req.body;
     const query = `SELECT * FROM user WHERE username=?`;
@@ -250,7 +267,7 @@ const invita = (array, evento, ev) => {
           connectionToDB
             .executeQuery(query, [hashed_password])
             .then((response) => {
-              // TODO - invio mail di conferma all'utente con la password presente in new_password
+              // Invio mail di conferma all'utente con la password presente in new_password
               emailer.send(
                 conf,
                 "barbierigabriele@itis-molinari.eu",
@@ -269,15 +286,6 @@ const invita = (array, evento, ev) => {
     });
   });
 
-  app.get("/send", (req, res) => {
-    console.log("sending ... ");
-    emailer.send(
-      conf,
-      "barbierigabriele@itis-molinari.eu",
-      "prova2",
-      "mail di prova",
-    );
-  });
 
   /**
    *
