@@ -18,11 +18,9 @@ const deleteEvento = (dict) => {
             return element.json();
         }).then((response) => {
             resolve(response);
-            console.log(response);
         })
             .catch((error) => {
                 reject(error);
-                console.log(error);
             });
     });
 };
@@ -32,8 +30,15 @@ eliminaEvento.onclick = () => {
         idEvento: idEvento.value,
         idUtente: idUtenteEvento.value
     };
-    deleteEvento(dict);
-}
+    deleteEvento(dict)
+        .then(response => {
+            console.log(response);
+        })
+        .catch(error => {
+            console.error(error);
+        });
+};
+
 
 socket.on("elimina",(result)=>{
     console.log(result);
