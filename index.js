@@ -118,6 +118,32 @@ const invita = (array, evento, ev) => {
     });
   });
 
+  const queryInsertEvent = (dict) => {
+      const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.stato}', '${dict.titolo}', '${dict.descrizione}', '${dict.posizione}', ${dict.idUser})`;
+      return connectionToDB.executeQuery(sql);
+  };
+
+  const queryGetAllUserEvents = (dict) => {
+      const sql = `SELECT * FROM evento WHERE idUser = ${dict.idUser}`;
+      return connectionToDB.executeQuery(sql);
+  };
+
+  const queryDeleteEvento = (dict) => {
+      const sql = `DELETE FROM evento WHERE id = ${dict.idEvento}`;
+      return connectionToDB.executeQuery(sql);
+  };
+
+  const queryGetUserIdOfEvent = (idEvent) => {
+      const sql = `SELECT idUser FROM evento WHERE id = ${idEvent}`;
+      return connectionToDB.executeQuery(sql);
+  }
+
+  const queryUtentiInvitati = (idEvent) => {
+      const sql = `SELECT invitare.idUser from invitare JOIN evento ON invitare.idEvento = evento.id WHERE invitare.idEvento =${idEvent}`;
+      return connectionToDB.executeQuery(sql);
+  }
+
+
   const insertEvent = (dict) => {
     const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES (${dict.dataOraScadenza}, ${dict.tipologia}, ${dict.stato}, ${dict.titolo}, ${dict.descrizione}, ${dict.posizione}, ${dict.idUser})`;
 
@@ -144,6 +170,58 @@ const invita = (array, evento, ev) => {
           res.json({ result: "error" });
         });
     }
+  });
+
+  app.post("/getAllUserEvents", (req, res) => {
+      const event = req.body.event;
+      if (event.idUser !== "") {
+          queryGetAllUserEvents(event)
+              .then((json) => {
+                  res.json({ result: json });
+              })
+              .catch((error) => {
+                  res.json({ result: "errore nella select degli eventi dell'utente: " + error });
+              });
+      };
+  });
+
+  app.post("/deleteEvento", (req, res) => {
+      const event = req.body.event;
+      if (event.idEvento !== "" && event.idUtente !== "") {
+          queryUtentiInvitati(event.idEvento)
+              .then((result) => {
+                  const array = [];
+                  result.forEach((e) => {
+                      array.push(e.idUser);
+                  });
+                  invita(array, event.idEvento, "elimina")
+                      .then(() => {
+                          queryGetUserIdOfEvent(event.idEvento)
+                              .then((json) => {
+                                  if (json[0].idUser == event.idUtente) {
+                                      queryDeleteEvento(event)
+                                          .then(() => {
+                                              res.json({ result: "ok" });
+                                          })
+                                          .catch((error) => {
+                                              res.json({ result: "errore nella delete: " + error });
+                                          });
+                                  }
+                              })
+                              .catch((error) => {
+                                  res.json({ result: "errore nella select del proprietario dell'evento: " + error });
+                              });
+                      })
+                      .catch((error) => {
+                          res.json({ result: "errore nella funzione invita: " + error });
+                      });
+              })
+              .catch((error) => {
+                  res.json({ result: "errore nelle select degli utenti invitati all'evento: " + error});
+              });
+      } else {
+          res.json({ result: "attributi non valorizzati"});
+      }
   });
 
   /**
