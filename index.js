@@ -372,6 +372,39 @@ const invita = (array, evento, ev) => {
     });
   });
 
+  app.get("/get-user-invitations", (req, res) => {
+    const uid = req.query['user-id'];
+    console.log("uid = "+uid)
+
+    const query = `SELECT evento.id, evento.titolo, evento.tipologia, evento.stato, evento.dataOraScadenza, evento.posizione, evento.descrizione, invitare.stato as stato_invito FROM invitare left join evento on invitare.idEvento = evento.id WHERE invitare.idUser=? `;
+    connectionToDB.executeQuery(query, [uid]).then((response) => {
+      if (response.length > 0) {
+        // Creo una password nuova e la mando via mail all'utente
+        res.json(response)
+      } else {
+        // email non presente
+        res.json("Nessun invito");
+      }
+    });
+
+  });
+
+  app.post("/accept-invitation", (req, res) => {
+    const { userId,eventId } = req.body;
+    const query = `UPDATE invitare SET stato='accettato' WHERE idUser=? AND idEvento=?`;
+    connectionToDB.executeQuery(query, [userId, eventId]).then((response) => {
+      res.json({ result: "ok" });
+    })
+  })
+
+  app.post("/reject-invitation", (req, res) => {
+    const { userId,eventId } = req.body;
+    const query = `UPDATE invitare SET stato='rifiutato' WHERE idUser=? AND idEvento=?`;
+    connectionToDB.executeQuery(query, [userId, eventId]).then((response) => {
+      res.json({ result: "ok" });
+    })
+  })
+
   /**
    *
    */
