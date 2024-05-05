@@ -168,7 +168,7 @@ const invita = (array, evento, ev) => {
   /**
    * Genera una nuova password casuale
    */
-  
+
   function generateRandomString(iLen) {
     var sRnd = "";
     var sChrs = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
@@ -182,7 +182,7 @@ const invita = (array, evento, ev) => {
   /**
    * Registrazione di un nuovo utente
    */
-  
+
   app.post("/register", (req, res) => {
     const { email, password, confirm_password } = req.body;
     if (password != confirm_password) {
@@ -215,7 +215,7 @@ const invita = (array, evento, ev) => {
               // Invio mail di conferma
               emailer.send(
                 conf,
-                "barbierigabriele@itis-molinari.eu",
+                email,
                 "Registrazione Avvenuta con successo",
                 "Ciao <strong>"+email+ "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" + password,
               );
@@ -231,7 +231,7 @@ const invita = (array, evento, ev) => {
   /**
    * Login utente
    */
-  
+
   app.post("/login", (req, res) => {
     const { email, password } = req.body;
     const query = `SELECT * FROM user WHERE username=?`;
@@ -270,7 +270,7 @@ const invita = (array, evento, ev) => {
               // Invio mail di conferma all'utente con la password presente in new_password
               emailer.send(
                 conf,
-                "barbierigabriele@itis-molinari.eu",
+                email,
                 "Password reimpostata",
                 "La tua nuova password è " + new_password,
               );
