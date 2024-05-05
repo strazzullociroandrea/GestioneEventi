@@ -185,9 +185,11 @@ const invita = (array, evento, ev) => {
 
   app.post("/register", (req, res) => {
     const { email, password, confirm_password } = req.body;
+    let errors = false;
     if (password != confirm_password) {
       // password errate
       res.json({ result: "errore - le password non coincidono" });
+      errors = true;
     }
 
     // Controllo che sia del Molinari
@@ -196,36 +198,42 @@ const invita = (array, evento, ev) => {
       res.json({
         result: "errore - email non valida - Non sei del nostro istituto!!!",
       });
+      errors = true;
     }
 
     // Controllo che l'email non sia già stata registrata
     const query = `SELECT * FROM user WHERE username=?`;
-    connectionToDB.executeQuery(query, [email]).then((response) => {
-      if (response.length > 0) {
-        res.json({ result: "errore - email già registrata" });
-      } else {
-        // Ok non è registrato
+    if (!errors) {
+      connectionToDB.executeQuery(query, [email]).then((response) => {
+        if (response.length > 0) {
+          res.json({ result: "errore - email già registrata" });
+        } else {
+          // Ok non è registrato
 
-        // Cripto la password
-        bcrypt.hash(password, saltRounds).then((hashed_password) => {
-          const query = `INSERT INTO user (username, password) VALUES (?, ?)`;
-          connectionToDB
-            .executeQuery(query, [email, hashed_password])
-            .then((response) => {
-              // Invio mail di conferma
-              emailer.send(
-                conf,
-                email,
-                "Registrazione Avvenuta con successo",
-                "Ciao <strong>"+email+ "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" + password,
-              );
+          // Cripto la password
+          bcrypt.hash(password, saltRounds).then((hashed_password) => {
+            const query = `INSERT INTO user (username, password) VALUES (?, ?)`;
+            connectionToDB
+              .executeQuery(query, [email, hashed_password])
+              .then((response) => {
+                // Invio mail di conferma
+                emailer.send(
+                  conf,
+                  email,
+                  "Registrazione Avvenuta con successo",
+                  "Ciao <strong>" +
+                    email +
+                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                    password,
+                );
 
-              res.json({ result: "ok" });
-            })
-            .catch((err) => console.error(err.message));
-        });
-      }
-    });
+                res.json({ result: "ok" });
+              })
+              .catch((err) => console.error(err.message));
+          });
+        }
+      });
+    }
   });
 
   /**
@@ -285,7 +293,6 @@ const invita = (array, evento, ev) => {
       }
     });
   });
-
 
   /**
    *
