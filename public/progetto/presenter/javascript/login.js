@@ -5,11 +5,24 @@ const socket = io();
 
 login.onclick = () => {
     const dict = {
-        email: email.ariaValueMax,
+        email: email.value,
         password: password.value,
     }
     socket.emit('login', dict);
 }
+
 socket.on('login', (response) => {
-    console.log(response);
+    if(response) {
+        sessionStorage.setItem('email', email.value);
+        sessionStorage.setItem('password', password.value);
+        window.location.href = './home.html';
+    } else {
+
+    }
 })
+
+window.onload = () => {
+    if(sessionStorage.getItem('email') !== undefined && sessionStorage.getItem('password') !== undefined) {
+        socket.emit('login', dict);
+    }
+}

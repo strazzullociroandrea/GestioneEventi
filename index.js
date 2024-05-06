@@ -118,11 +118,13 @@ const queryUtentiInvitati = (idEvent) => {
         let emailGlobale;
         socket.on("login", async(dizionario)=>{
             const { email, password } = dizionario;
+            console.log("email: "+email+", password: "+password);
             const query = `SELECT * FROM user WHERE username=?`;
             connectionToDB.executeQuery(query, [email]).then((response) => {
                 if (response.length > 0) {
                     const hashed_password = response[0].password;
                     validateUser(password, hashed_password).then((result) => {
+                        console.log(result);
                         if (result) {
                             emailGlobale = email;
                             const oldAssocIndex = associazioni.findIndex(a => a.email === emailGlobale);
@@ -215,29 +217,26 @@ const queryUtentiInvitati = (idEvent) => {
                 });
             }
         });
-    });
-
-
-    app.post("/insertEvent", (req, res) => {
-        const event = req.body.event;
-        if (
-            event.dataOraScadenza !== "" &&
-            event.tipologia !== "" &&
-            event.stato !== "" &&
-            event.titolo !== "" &&
-            event.descrizione !== "" &&
-            event.posizione !== "" &&
-            event.idUser
-        ) {
-            console.log("Event");
-            queryInsertEvent(event)
-                .then((json) => {
-                    res.json({ result: "ok" });
-                })
-                .catch((error) => {
-                    res.json({ result: "error" });
-                });
-        }
+        socket.on("insertEvento",(evento)=>{
+            if (
+                evento.dataOraScadenza !== "" &&
+                evento.tipologia !== "" &&
+                evento.stato !== "" &&
+                evento.titolo !== "" &&
+                evento.descrizione !== "" &&
+                evento.posizione !== "" &&
+                evento.idUser
+            ) {
+                console.log("Event");
+                queryInsertEvent(evento)
+                    .then((json) => {
+                        res.json({ result: "ok" });
+                    })
+                    .catch((error) => {
+                        res.json({ result: "error" });
+                    });
+            }
+        })
     });
 
     
@@ -292,7 +291,7 @@ const queryUtentiInvitati = (idEvent) => {
             res.json({ result: "errore - le password non coincidono" });
             errors = true;
         }
-
+        console.log(email);
         // Controllo che sia del Molinari
         const splitted = email.split("@");
         if (splitted[1] != "itis-molinari.eu") {
@@ -385,7 +384,6 @@ const queryUtentiInvitati = (idEvent) => {
                 res.json("Nessun invito");
             }
         });
-
     });
 
     app.post("/accept-invitation", (req, res) => {
