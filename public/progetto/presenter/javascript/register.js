@@ -2,6 +2,8 @@ const register = document.getElementById('register');
 const email = document.getElementById('email');
 const password = document.getElementById('password');
 const confirm_password = document.getElementById('confirm_password');
+const divAlert = document.getElementById('alert');
+const testoAlert = document.getElementById('testoAlert');
 
 const fetchRegister = (dict) => {
     return new Promise((resolve, reject) => {
@@ -30,14 +32,19 @@ register.onclick = () => {
         password: password.value,
         confirm_password: confirm_password.value,
     }
+
     fetchRegister(dict)
         .then((response) => {
-            if (response) {
+            if (response.result === "ok") {
+                divAlert.classList.add('d-none');
                 sessionStorage.setItem('email', email.value);
                 sessionStorage.setItem('password', password.value);
+                email.value = "";
+                password.value = "";
                 window.location.href = './login.html';
             } else {
-                
+                testoAlert.innerText = response.result;
+                divAlert.classList.remove('d-none');
             }
         })
 }
