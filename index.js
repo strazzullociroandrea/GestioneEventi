@@ -57,6 +57,61 @@ const invita = (array, evento, ev) => {
         resolve();
     });
 };
+
+/**
+     * Genera una nuova password casuale
+     */
+
+function generateRandomString(iLen) {
+    var sRnd = "";
+    var sChrs = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+    for (var i = 0; i < iLen; i++) {
+        var randomPoz = Math.floor(Math.random() * sChrs.length);
+        sRnd += sChrs.substring(randomPoz, randomPoz + 1);
+    }
+    return sRnd;
+}
+
+/**
+     * Controlla se la password fornita dall'utente coincide con quella del database
+     */
+function validateUser(password, hash) {
+    return new Promise(function (resolve, reject) {
+        bcrypt
+            .compare(password, hash)
+            .then((res) => {
+                resolve(res);
+            })
+            .catch((err) => console.error(err.message));
+    });
+}
+
+const queryInsertEvent = (dict) => {
+    const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.stato}', '${dict.titolo}', '${dict.descrizione}', '${dict.posizione}', ${dict.idUser})`;
+    return connectionToDB.executeQuery(sql);
+};
+
+const queryGetAllUserEvents = (dict) => {
+    const sql = `SELECT * FROM evento WHERE idUser = ${dict.idUser}`;
+    return connectionToDB.executeQuery(sql);
+};
+
+const queryDeleteEvento = (dict) => {
+    const sql = `DELETE FROM evento WHERE id = ${dict.idEvento}`;
+    return connectionToDB.executeQuery(sql);
+};
+
+const queryGetUserIdOfEvent = (idEvent) => {
+    const sql = `SELECT idUser FROM evento WHERE id = ${idEvent}`;
+    return connectionToDB.executeQuery(sql);
+}
+
+const queryUtentiInvitati = (idEvent) => {
+    const sql = `SELECT invitare.idUser from invitare JOIN evento ON invitare.idEvento = evento.id WHERE invitare.idEvento =${idEvent}`;
+    return connectionToDB.executeQuery(sql);
+}
+
+//gestione socket
 (() => {
     const connectionToDB = db(conf, fs);
     io.on("connection", (socket) => {
@@ -96,6 +151,18 @@ const invita = (array, evento, ev) => {
                 [idEvento],
             );
             io.to(socket.id).emit("resultGetEvento", { result: rsp });
+        });
+
+        socket.on("getAllUserEvents", async (evento) => {
+            if (evento.idUser !== "") {
+                queryGetAllUserEvents(evento)
+                    .then((json) => {
+                        io.to(socket.id).emit("getResult", { result: json });
+                    })
+                    .catch((error) => {
+                        io.to(socket.id).emit("getResult", { result: [] });
+                    });
+            };
         });
         //manca la possibilità di cambiare/aggiungere immagini e gli invitati
         socket.on("updateEvento", async (dizionario) => {
@@ -150,30 +217,6 @@ const invita = (array, evento, ev) => {
         });
     });
 
-    const queryInsertEvent = (dict) => {
-        const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.stato}', '${dict.titolo}', '${dict.descrizione}', '${dict.posizione}', ${dict.idUser})`;
-        return connectionToDB.executeQuery(sql);
-    };
-
-    const queryGetAllUserEvents = (dict) => {
-        const sql = `SELECT * FROM evento WHERE idUser = ${dict.idUser}`;
-        return connectionToDB.executeQuery(sql);
-    };
-
-    const queryDeleteEvento = (dict) => {
-        const sql = `DELETE FROM evento WHERE id = ${dict.idEvento}`;
-        return connectionToDB.executeQuery(sql);
-    };
-
-    const queryGetUserIdOfEvent = (idEvent) => {
-        const sql = `SELECT idUser FROM evento WHERE id = ${idEvent}`;
-        return connectionToDB.executeQuery(sql);
-    }
-
-    const queryUtentiInvitati = (idEvent) => {
-        const sql = `SELECT invitare.idUser from invitare JOIN evento ON invitare.idEvento = evento.id WHERE invitare.idEvento =${idEvent}`;
-        return connectionToDB.executeQuery(sql);
-    }
 
     app.post("/insertEvent", (req, res) => {
         const event = req.body.event;
@@ -197,18 +240,7 @@ const invita = (array, evento, ev) => {
         }
     });
 
-    app.post("/getAllUserEvents", (req, res) => {
-        const event = req.body.event;
-        if (event.idUser !== "") {
-            queryGetAllUserEvents(event)
-                .then((json) => {
-                    res.json({ result: json });
-                })
-                .catch((error) => {
-                    res.json({ result: "errore nella select degli eventi dell'utente: " + error });
-                });
-        };
-    });
+    
 
     app.post("/deleteEvento", (req, res) => {
         const event = req.body.event;
@@ -250,42 +282,8 @@ const invita = (array, evento, ev) => {
     });
 
     /**
-     * Gabriele -
-     * POST di registrazione utente - login - reset password
-     */
-
-    /**
-     * Controlla se la password fornita dall'utente coincide con quella del database
-     */
-    function validateUser(password, hash) {
-        return new Promise(function (resolve, reject) {
-            bcrypt
-                .compare(password, hash)
-                .then((res) => {
-                    resolve(res);
-                })
-                .catch((err) => console.error(err.message));
-        });
-    }
-
-    /**
-     * Genera una nuova password casuale
-     */
-
-    function generateRandomString(iLen) {
-        var sRnd = "";
-        var sChrs = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-        for (var i = 0; i < iLen; i++) {
-            var randomPoz = Math.floor(Math.random() * sChrs.length);
-            sRnd += sChrs.substring(randomPoz, randomPoz + 1);
-        }
-        return sRnd;
-    }
-
-    /**
      * Registrazione di un nuovo utente
      */
-
     app.post("/register", (req, res) => {
         const { email, password, confirm_password } = req.body;
         let errors = false;
@@ -337,30 +335,6 @@ const invita = (array, evento, ev) => {
                 }
             });
         }
-    });
-
-    /**
-     * Login utente
-     */
-
-    app.post("/login", (req, res) => {
-        const { email, password } = req.body;
-        const query = `SELECT * FROM user WHERE username=?`;
-        connectionToDB.executeQuery(query, [email]).then((response) => {
-            if (response.length > 0) {
-                const hashed_password = response[0].password;
-                validateUser(password, hashed_password).then((result) => {
-                    if (result) {
-                        res.json("ok password corretta");
-                    } else {
-                        res.json("email o password errata");
-                    }
-                });
-            } else {
-                // email non presente
-                res.json("email o password errata");
-            }
-        });
     });
 
     /**
