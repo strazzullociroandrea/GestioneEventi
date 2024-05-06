@@ -60,6 +60,36 @@ const invita = (array, evento, ev) => {
 (() => {
     const connectionToDB = db(conf, fs);
     io.on("connection", (socket) => {
+        let emailGlobale;
+        socket.on("login", async(dizionario)=>{
+            const { email, password } = dizionario;
+            const query = `SELECT * FROM user WHERE username=?`;
+            connectionToDB.executeQuery(query, [email]).then((response) => {
+                if (response.length > 0) {
+                    const hashed_password = response[0].password;
+                    validateUser(password, hashed_password).then((result) => {
+                        if (result) {
+                            emailGlobale = email;
+                            const oldAssocIndex = associazioni.findIndex(a => a.email === emailGlobale);
+                            if (oldAssocIndex !== -1) {
+                                associazioni.splice(oldAssocIndex, 1);
+                                associazioni.push({ email, socket: socket.id });
+                                io.to(socket.id).emit("login", { login: true });
+                            }else{
+                                associazioni.push({ email, socket: socket.id });  
+                                io.to(socket.id).emit("login", { login: true });
+                            }
+                            io.to(socket.id).emit("login", "Accesso effettuato con successo");
+                            
+                        } else {
+                            io.to(socket.id).emit("login", "Credenziali errate");
+                        }
+                    });
+                } else {
+                    io.to(socket.id).emit("login", "Credenziali errate");
+                }
+            });
+        });
         socket.on("getEvento", async (idEvento) => {
             const rsp = await connectionToDB.executeQuery(
                 "SELECT * FROM evento WHERE id=?",
