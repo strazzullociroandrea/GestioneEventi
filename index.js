@@ -72,55 +72,40 @@ function generateRandomString(iLen) {
     return sRnd;
 }
 
-/**
-     * Controlla se la password fornita dall'utente coincide con quella del database
-     */
-function validateUser(password, hash) {
-    /*return new Promise(function (resolve, reject) {
-        bcrypt
-            .compare(password, hash)
-            .then((res) => {
-                console.log("comparazione: ");
-                console.log("$2b$10$vJ8bj.2j.l/VdyTIHa6KaepcObbFfuhID3xOIeiFcFgu1dxuUOy6K" == hash)
-                console.log(res);
-                resolve(res);
-            })
-            .catch((err) => console.error(err.message));
-    });*/
-}
 
 
 //gestione socket
 (() => {
     const connectionToDB = db(conf, fs);
 
-const queryInsertEvent = (dict) => {
-    const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.stato}', '${dict.titolo}', '${dict.descrizione}', '${dict.posizione}', ${dict.idUser})`;
-    return connectionToDB.executeQuery(sql);
-};
+    const queryInsertEvent = (dict) => {
+        //non aggiunge gli invitati..
+        const sql = `INSERT INTO evento (dataOraScadenza, tipologia, titolo, descrizione, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.titolo}', '${dict.descrizione}', '${dict.posizione}', (SELECT id FROM user WHERE username = '${dict.email}'))`;
+        return connectionToDB.executeQuery(sql);
+    };
 
-const queryGetAllUserEvents = (email) => {
-    const sql = `SELECT evento.* FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
-    return connectionToDB.executeQuery(sql);
-};
+    const queryGetAllUserEvents = (email) => {
+        const sql = `SELECT evento.* FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
+        return connectionToDB.executeQuery(sql);
+    };
 
-const queryDeleteEvento = (dict) => {
-    const sql = `DELETE FROM evento WHERE id = ${dict.idEvento}`;
-    return connectionToDB.executeQuery(sql);
-};
+    const queryDeleteEvento = (dict) => {
+        const sql = `DELETE FROM evento WHERE id = ${dict.idEvento}`;
+        return connectionToDB.executeQuery(sql);
+    };
 
-const queryGetUserIdOfEvent = (idEvent) => {
-    const sql = `SELECT idUser FROM evento WHERE id = ${idEvent}`;
-    return connectionToDB.executeQuery(sql);
-}
+    const queryGetUserIdOfEvent = (idEvent) => {
+        const sql = `SELECT idUser FROM evento WHERE id = ${idEvent}`;
+        return connectionToDB.executeQuery(sql);
+    }
 
-const queryUtentiInvitati = (idEvent) => {
-    const sql = `SELECT invitare.idUser from invitare JOIN evento ON invitare.idEvento = evento.id WHERE invitare.idEvento =${idEvent}`;
-    return connectionToDB.executeQuery(sql);
-}
+    const queryUtentiInvitati = (idEvent) => {
+        const sql = `SELECT invitare.idUser from invitare JOIN evento ON invitare.idEvento = evento.id WHERE invitare.idEvento =${idEvent}`;
+        return connectionToDB.executeQuery(sql);
+    }
     io.on("connection", (socket) => {
         let emailGlobale;
-        socket.on("login", async(dizionario)=>{
+        socket.on("login", async (dizionario) => {
             const { email, password } = dizionario;
             const query = `SELECT * FROM user WHERE username=?`;
             connectionToDB.executeQuery(query, [email]).then((response) => {
@@ -134,12 +119,12 @@ const queryUtentiInvitati = (idEvent) => {
                                 associazioni.splice(oldAssocIndex, 1);
                                 associazioni.push({ email, socket: socket.id });
                                 io.to(socket.id).emit("loginSucc", "Accesso effettuato con successo");
-                            }else{
-                                associazioni.push({ email, socket: socket.id });  
+                            } else {
+                                associazioni.push({ email, socket: socket.id });
                                 io.to(socket.id).emit("loginSucc", "Accesso effettuato con successo");
                             }
                             io.to(socket.id).emit("loginSucc", "Accesso effettuato con successo");
-                            
+
                         } else {
                             io.to(socket.id).emit("loginSucc", "Credenziali errate");
                         }
@@ -150,11 +135,17 @@ const queryUtentiInvitati = (idEvent) => {
             });
         });
         socket.on("getEvento", async (idEvento) => {
-            const rsp = await connectionToDB.executeQuery(
-                "SELECT * FROM evento WHERE id=?",
-                [idEvento],
-            );
-            io.to(socket.id).emit("resultGetEvento", { result: rsp });
+            //bisogna conrtollare che chi lo vuole vedere sia un invitato o il proprietario altrimenti restituisce un arrya vuoto
+            try {
+                const rsp = await connectionToDB.executeQuery(
+                    "SELECT * FROM evento WHERE id=?",
+                    [idEvento],
+                );
+                io.to(socket.id).emit("resultGetEvento", { result: rsp });
+            } catch (e) {
+                console.log(e);
+            }
+
         });
 
         socket.on("getAllUserEvents", async (email) => {
@@ -220,29 +211,29 @@ const queryUtentiInvitati = (idEvent) => {
                 });
             }
         });
-        socket.on("insertEvento",(evento)=>{
+        socket.on("insertEvento", async (evento) => {
             if (
                 evento.dataOraScadenza !== "" &&
                 evento.tipologia !== "" &&
-                evento.stato !== "" &&
+               /* evento.stato !== "" &&*/
                 evento.titolo !== "" &&
                 evento.descrizione !== "" &&
                 evento.posizione !== "" &&
-                evento.idUser
+                evento.email
             ) {
-                console.log("Event");
-                queryInsertEvent(evento)
-                    .then((json) => {
-                        res.json({ result: "ok" });
-                    })
-                    .catch((error) => {
-                        res.json({ result: "error" });
-                    });
+                await queryInsertEvent(evento);
+                io.to(socket.id).emit("insertSuccess", {
+                    result: "OK",
+                });
+            }else{
+                io.to(socket.id).emit("insertSuccess", {
+                    result: "Non è stato possibile aggiungere l'evento",
+                });
             }
         })
     });
 
-    
+
 
     app.post("/deleteEvento", (req, res) => {
         const event = req.body.event;
@@ -287,7 +278,7 @@ const queryUtentiInvitati = (idEvent) => {
      * Registrazione di un nuovo utente
      */
     app.post("/register", (req, res) => {
-        try{
+        try {
             const { email, password, confirm_password } = req.body;
             let errors = false;
             if (password != confirm_password) {
@@ -304,7 +295,7 @@ const queryUtentiInvitati = (idEvent) => {
                 });
                 errors = true;
             }
-    
+
             // Controllo che l'email non sia già stata registrata
             const query = `SELECT * FROM user WHERE username=?`;
             if (!errors) {
@@ -313,7 +304,7 @@ const queryUtentiInvitati = (idEvent) => {
                         res.json({ result: "errore - email già registrata" });
                     } else {
                         // Ok non è registrato
-    
+
                         // Cripto la password
                         bcrypt.hash(password, saltRounds).then((hashed_password) => {
                             const query = `INSERT INTO user (username, password) VALUES (?, ?)`;
@@ -330,7 +321,7 @@ const queryUtentiInvitati = (idEvent) => {
                                         "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
                                         password,
                                     );
-    
+
                                     res.json({ result: "ok" });
                                 })
                                 .catch((err) => console.error(err.message));
@@ -338,11 +329,11 @@ const queryUtentiInvitati = (idEvent) => {
                     }
                 });
             }
-        }catch(e){
+        } catch (e) {
             console.log("registrazione error");
             console.log(e);
         }
-        
+
     });
 
     /**
@@ -358,7 +349,7 @@ const queryUtentiInvitati = (idEvent) => {
                 bcrypt.hash(new_password, saltRounds).then((hashed_password) => {
                     const query = `UPDATE user SET password = ? WHERE username = ?`;
                     connectionToDB
-                        .executeQuery(query, [hashed_password,email])
+                        .executeQuery(query, [hashed_password, email])
                         .then((response) => {
                             // Invio mail di conferma all'utente con la password presente in new_password
                             emailer.send(
