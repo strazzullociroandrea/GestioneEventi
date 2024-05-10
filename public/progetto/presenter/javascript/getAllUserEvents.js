@@ -1,6 +1,7 @@
 const idUser = document.getElementById('idUser');
 const invia = document.getElementById('invia');
 const table = document.getElementById('table');
+const logout = document.getElementById("logout");
 const socket = io();
 
 window.onload = () =>{
@@ -12,14 +13,15 @@ window.onload = () =>{
         password: password
     });
    }else{
-    console.log("non settati");
-    //window.location.href = "./login.html";
+    window.location.href = "./login.html";
    }
 }
-
+logout.onclick = () =>{
+    sessionStorage.clear();
+    window.location.href = "./login.html";
+}
 socket.on('login', (response) => {
     if (response === "Accesso effettuato con successo") {
-        console.log("ciao");
         socket.emit("getAllUserEvents",sessionStorage.getItem("email"));
     } else {
         window.location.href = "./login.html";
