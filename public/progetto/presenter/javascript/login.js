@@ -4,11 +4,14 @@ const password = document.getElementById('password');
 const socket = io();
 const divAlert = document.getElementById('alert');
 const testoAlert = document.getElementById('testoAlert');
-
+let mailTemp = "";
+let passwordTemp = "";
 login.onclick = () => {
+    mailTemp = email.value;
+    passwordTemp =  password.value;
     const dict = {
-        email: email.value,
-        password: password.value,
+        email: mailTemp,
+        password: passwordTemp
     }
     socket.emit('login', dict);
 }
@@ -16,8 +19,10 @@ login.onclick = () => {
 socket.on('login', (response) => {
     if (response === "Accesso effettuato con successo") {
         divAlert.classList.add('d-none');
-        sessionStorage.setItem('email', email.value);
-        sessionStorage.setItem('password', password.value);
+        sessionStorage.setItem('email', mailTemp);
+        sessionStorage.setItem('password', passwordTemp);
+        console.log("email.value");
+        console.log(mailTemp);
         email.value = "";
         password.value = "";
         window.location.href = './home.html';

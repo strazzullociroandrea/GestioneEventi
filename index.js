@@ -89,13 +89,18 @@ function validateUser(password, hash) {
     });*/
 }
 
+
+//gestione socket
+(() => {
+    const connectionToDB = db(conf, fs);
+
 const queryInsertEvent = (dict) => {
     const sql = `INSERT INTO evento (dataOraScadenza, tipologia, stato, titolo, descrizione, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.stato}', '${dict.titolo}', '${dict.descrizione}', '${dict.posizione}', ${dict.idUser})`;
     return connectionToDB.executeQuery(sql);
 };
 
-const queryGetAllUserEvents = (dict) => {
-    const sql = `SELECT * FROM evento WHERE idUser = ${dict.idUser}`;
+const queryGetAllUserEvents = (email) => {
+    const sql = `SELECT evento.* FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
     return connectionToDB.executeQuery(sql);
 };
 
@@ -113,10 +118,6 @@ const queryUtentiInvitati = (idEvent) => {
     const sql = `SELECT invitare.idUser from invitare JOIN evento ON invitare.idEvento = evento.id WHERE invitare.idEvento =${idEvent}`;
     return connectionToDB.executeQuery(sql);
 }
-
-//gestione socket
-(() => {
-    const connectionToDB = db(conf, fs);
     io.on("connection", (socket) => {
         let emailGlobale;
         socket.on("login", async(dizionario)=>{
@@ -156,9 +157,9 @@ const queryUtentiInvitati = (idEvent) => {
             io.to(socket.id).emit("resultGetEvento", { result: rsp });
         });
 
-        socket.on("getAllUserEvents", async (evento) => {
-            if (evento.idUser !== "") {
-                queryGetAllUserEvents(evento)
+        socket.on("getAllUserEvents", async (email) => {
+            if (email !== "") {
+                queryGetAllUserEvents(email)
                     .then((json) => {
                         io.to(socket.id).emit("getResult", { result: json });
                     })

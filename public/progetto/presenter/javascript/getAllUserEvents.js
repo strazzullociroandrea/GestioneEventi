@@ -1,7 +1,35 @@
 const idUser = document.getElementById('idUser');
 const invia = document.getElementById('invia');
 const table = document.getElementById('table');
+const socket = io();
 
+window.onload = () =>{
+   const user = sessionStorage.getItem("email");
+   const password = sessionStorage.getItem("password");
+   if(user && user != "" && password && password != ""){
+    socket.emit('login', {
+        email: user,
+        password: password
+    });
+   }else{
+    console.log("non settati");
+    //window.location.href = "./login.html";
+   }
+}
+
+socket.on('login', (response) => {
+    if (response === "Accesso effettuato con successo") {
+        console.log("ciao");
+        socket.emit("getAllUserEvents",sessionStorage.getItem("email"));
+    } else {
+        window.location.href = "./login.html";
+    }
+})
+socket.on('getResult', (response) => {
+    console.log("Eventi recuperati");
+    console.log(response);
+})
+/*
 const getAllUserEvents = (dict) => {
     return new Promise((resolve, reject) => {
         fetch("/getAllUserEvents", {
@@ -63,4 +91,5 @@ const render = (array) => {
     })
 
     table.innerHTML = html;
-};
+};*/
+
