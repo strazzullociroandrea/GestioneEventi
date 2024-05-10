@@ -354,9 +354,9 @@ const queryUtentiInvitati = (idEvent) => {
                 // Creo una password nuova e la mando via mail all'utente
                 const new_password = generateRandomString(8);
                 bcrypt.hash(new_password, saltRounds).then((hashed_password) => {
-                    const query = `UPDATE user SET password = ?`;
+                    const query = `UPDATE user SET password = ? WHERE username = ?`;
                     connectionToDB
-                        .executeQuery(query, [hashed_password])
+                        .executeQuery(query, [hashed_password,email])
                         .then((response) => {
                             // Invio mail di conferma all'utente con la password presente in new_password
                             emailer.send(
