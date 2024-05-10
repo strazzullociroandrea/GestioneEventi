@@ -3,8 +3,10 @@ const invia = document.getElementById('invia');
 const table = document.getElementById('table');
 const logout = document.getElementById("logout");
 const socket = io();
+const templateEvento = '<div class="col-4 text-center card"><p>%TITOLO</p><p>%SCADENZA</p> <p>%DESCRIZIONE</p><p>%TIPOLOGIA</p><p>%STATO</p></div>';
+const eventi = document.getElementById("eventi");
 
-window.onload = () =>{
+window.onload = () => {
    const user = sessionStorage.getItem("email");
    const password = sessionStorage.getItem("password");
    if(user && user != "" && password && password != ""){
@@ -12,86 +14,38 @@ window.onload = () =>{
         email: user,
         password: password
     });
-   }else{
+   } else {
     window.location.href = "./login.html";
    }
 }
-logout.onclick = () =>{
+
+logout.onclick = () => {
     sessionStorage.clear();
     window.location.href = "./login.html";
 }
-socket.on('login', (response) => {
+
+socket.on('loginSucc', (response) => {
     if (response === "Accesso effettuato con successo") {
-        socket.emit("getAllUserEvents",sessionStorage.getItem("email"));
+        socket.emit("getAllUserEvents", sessionStorage.getItem("email"));
     } else {
         window.location.href = "./login.html";
     }
-})
+});
+
 socket.on('getResult', (response) => {
-    console.log("Eventi recuperati");
-    console.log(response);
-})
-/*
-const getAllUserEvents = (dict) => {
-    return new Promise((resolve, reject) => {
-        fetch("/getAllUserEvents", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                event: dict,
-            }),
-        }).then((element) => {
-            return element.json();
-        }).then((response) => {
-            resolve(response);
-            console.log(response);
-        })
-            .catch((error) => {
-                reject(error);
-                console.log(error);
-            });
-    });
-};
-
-invia.onclick = async() => {
-    const dict = {
-        idUser: idUser.value,
+    let html = "";
+    const { result } = response;
+    for (let i = 0; i < result.length; i += 3) {
+        html += '<div class="row justify-content-center">';
+        for (let j = i; j < Math.min(i + 3, result.length); j++) {
+            html += templateEvento
+            .replace("%TITOLO", result[j].titolo)
+            .replace("%SCADENZA", result[j].dataOraScadenza.replace("T", " "))
+            .replace("%DESCRIZIONE", result[j].descrizione)
+            .replace("%TIPOLOGIA", result[j].tipologia)
+            .replace("%STATO", result[j].stato);
+        }
+        html += '</div>';
     }
-    const result = await getAllUserEvents(dict);
-    render(result.result);
-}
-
-const render = (array) => {
-    const thead = `<tr> 
-    <th>Codice</th>
-    <th>Titolo</th>
-    <th>Tipologia</th>
-    <th>Stato</th>
-    <th>Data e ora</th>
-    <th>Posizione</th>
-    <th>Descrizione</th>
-    </tr>`;
-
-    const tbody = `<tr> 
-    <td>%CODICE</td>
-    <td>%TITOLO</td>
-    <td>%TIPOLOGIA</td>
-    <td>%STATO</td>
-    <td>%DATAORA</td>
-    <td>%POSIZIONE</td>
-    <td>%DESCRIZIONE</td>
-    </tr>`;
-
-    let html = thead;
-
-    array.forEach((e) => {
-        const dateTime = new Date(e.dataOraScadenza).toLocaleString();
-         html += tbody.replace("%CODICE", e.id).replace("%TITOLO", e.titolo).replace("%TIPOLOGIA", e.tipologia)
-        .replace("%STATO", e.stato).replace("%DATAORA", dateTime).replace("%POSIZIONE", e.posizione).replace("%DESCRIZIONE", e.descrizione);
-    })
-
-    table.innerHTML = html;
-};*/
-
+    eventi.innerHTML = html;
+});

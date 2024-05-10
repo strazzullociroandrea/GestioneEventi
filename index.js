@@ -133,19 +133,19 @@ const queryUtentiInvitati = (idEvent) => {
                             if (oldAssocIndex !== -1) {
                                 associazioni.splice(oldAssocIndex, 1);
                                 associazioni.push({ email, socket: socket.id });
-                                io.to(socket.id).emit("login", "Accesso effettuato con successo");
+                                io.to(socket.id).emit("loginSucc", "Accesso effettuato con successo");
                             }else{
                                 associazioni.push({ email, socket: socket.id });  
-                                io.to(socket.id).emit("login", "Accesso effettuato con successo");
+                                io.to(socket.id).emit("loginSucc", "Accesso effettuato con successo");
                             }
-                            io.to(socket.id).emit("login", "Accesso effettuato con successo");
+                            io.to(socket.id).emit("loginSucc", "Accesso effettuato con successo");
                             
                         } else {
-                            io.to(socket.id).emit("login", "Credenziali errate");
+                            io.to(socket.id).emit("loginSucc", "Credenziali errate");
                         }
                     });
                 } else {
-                    io.to(socket.id).emit("login", "Credenziali errate");
+                    io.to(socket.id).emit("loginSucc", "Credenziali errate");
                 }
             });
         });
@@ -164,7 +164,8 @@ const queryUtentiInvitati = (idEvent) => {
                         io.to(socket.id).emit("getResult", { result: json });
                     })
                     .catch((error) => {
-                        io.to(socket.id).emit("getResult", { result: [] });
+                        console.log(error);
+                        //io.to(socket.id).emit("getResult", { result: [] });
                     });
             };
         });
