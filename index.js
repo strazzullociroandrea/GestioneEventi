@@ -76,14 +76,17 @@ function generateRandomString(iLen) {
      * Controlla se la password fornita dall'utente coincide con quella del database
      */
 function validateUser(password, hash) {
-    return new Promise(function (resolve, reject) {
+    /*return new Promise(function (resolve, reject) {
         bcrypt
             .compare(password, hash)
             .then((res) => {
+                console.log("comparazione: ");
+                console.log("$2b$10$vJ8bj.2j.l/VdyTIHa6KaepcObbFfuhID3xOIeiFcFgu1dxuUOy6K" == hash)
+                console.log(res);
                 resolve(res);
             })
             .catch((err) => console.error(err.message));
-    });
+    });*/
 }
 
 const queryInsertEvent = (dict) => {
@@ -118,23 +121,21 @@ const queryUtentiInvitati = (idEvent) => {
         let emailGlobale;
         socket.on("login", async(dizionario)=>{
             const { email, password } = dizionario;
-            console.log("email: "+email+", password: "+password);
             const query = `SELECT * FROM user WHERE username=?`;
             connectionToDB.executeQuery(query, [email]).then((response) => {
                 if (response.length > 0) {
                     const hashed_password = response[0].password;
-                    validateUser(password, hashed_password).then((result) => {
-                        console.log(result);
+                    bcrypt.compare(password, hashed_password).then((result) => {
                         if (result) {
                             emailGlobale = email;
                             const oldAssocIndex = associazioni.findIndex(a => a.email === emailGlobale);
                             if (oldAssocIndex !== -1) {
                                 associazioni.splice(oldAssocIndex, 1);
                                 associazioni.push({ email, socket: socket.id });
-                                io.to(socket.id).emit("login", { login: true });
+                                io.to(socket.id).emit("login", "Accesso effettuato con successo");
                             }else{
                                 associazioni.push({ email, socket: socket.id });  
-                                io.to(socket.id).emit("login", { login: true });
+                                io.to(socket.id).emit("login", "Accesso effettuato con successo");
                             }
                             io.to(socket.id).emit("login", "Accesso effettuato con successo");
                             
@@ -284,56 +285,62 @@ const queryUtentiInvitati = (idEvent) => {
      * Registrazione di un nuovo utente
      */
     app.post("/register", (req, res) => {
-        const { email, password, confirm_password } = req.body;
-        let errors = false;
-        if (password != confirm_password) {
-            // password errate
-            res.json({ result: "errore - le password non coincidono" });
-            errors = true;
+        try{
+            const { email, password, confirm_password } = req.body;
+            let errors = false;
+            if (password != confirm_password) {
+                // password errate
+                res.json({ result: "errore - le password non coincidono" });
+                errors = true;
+            }
+            console.log(email);
+            // Controllo che sia del Molinari
+            const splitted = email.split("@");
+            if (splitted[1] != "itis-molinari.eu") {
+                res.json({
+                    result: "errore - email non valida - Non sei del nostro istituto!!!",
+                });
+                errors = true;
+            }
+    
+            // Controllo che l'email non sia già stata registrata
+            const query = `SELECT * FROM user WHERE username=?`;
+            if (!errors) {
+                connectionToDB.executeQuery(query, [email]).then((response) => {
+                    if (response.length > 0) {
+                        res.json({ result: "errore - email già registrata" });
+                    } else {
+                        // Ok non è registrato
+    
+                        // Cripto la password
+                        bcrypt.hash(password, saltRounds).then((hashed_password) => {
+                            const query = `INSERT INTO user (username, password) VALUES (?, ?)`;
+                            connectionToDB
+                                .executeQuery(query, [email, hashed_password])
+                                .then((response) => {
+                                    // Invio mail di conferma
+                                    emailer.send(
+                                        conf,
+                                        email,
+                                        "Registrazione Avvenuta con successo",
+                                        "Ciao <strong>" +
+                                        email +
+                                        "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                                        password,
+                                    );
+    
+                                    res.json({ result: "ok" });
+                                })
+                                .catch((err) => console.error(err.message));
+                        });
+                    }
+                });
+            }
+        }catch(e){
+            console.log("registrazione error");
+            console.log(e);
         }
-        console.log(email);
-        // Controllo che sia del Molinari
-        const splitted = email.split("@");
-        if (splitted[1] != "itis-molinari.eu") {
-            res.json({
-                result: "errore - email non valida - Non sei del nostro istituto!!!",
-            });
-            errors = true;
-        }
-
-        // Controllo che l'email non sia già stata registrata
-        const query = `SELECT * FROM user WHERE username=?`;
-        if (!errors) {
-            connectionToDB.executeQuery(query, [email]).then((response) => {
-                if (response.length > 0) {
-                    res.json({ result: "errore - email già registrata" });
-                } else {
-                    // Ok non è registrato
-
-                    // Cripto la password
-                    bcrypt.hash(password, saltRounds).then((hashed_password) => {
-                        const query = `INSERT INTO user (username, password) VALUES (?, ?)`;
-                        connectionToDB
-                            .executeQuery(query, [email, hashed_password])
-                            .then((response) => {
-                                // Invio mail di conferma
-                                emailer.send(
-                                    conf,
-                                    email,
-                                    "Registrazione Avvenuta con successo",
-                                    "Ciao <strong>" +
-                                    email +
-                                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
-                                    password,
-                                );
-
-                                res.json({ result: "ok" });
-                            })
-                            .catch((err) => console.error(err.message));
-                    });
-                }
-            });
-        }
+        
     });
 
     /**
@@ -359,13 +366,13 @@ const queryUtentiInvitati = (idEvent) => {
                                 "La tua nuova password è " + new_password,
                             );
 
-                            res.json({ "nuova password": new_password });
+                            res.json(true);
                         })
                         .catch((err) => console.error(err.message));
                 });
             } else {
                 // email non presente
-                res.json("email o password errata");
+                res.json("email errata");
             }
         });
     });
