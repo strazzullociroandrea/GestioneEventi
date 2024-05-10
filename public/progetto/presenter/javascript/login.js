@@ -14,8 +14,6 @@ login.onclick = () => {
 }
 
 socket.on('login', (response) => {
-    console.log("response");
-    console.log(response);
     if (response === "Accesso effettuato con successo") {
         divAlert.classList.add('d-none');
         sessionStorage.setItem('email', email.value);

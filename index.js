@@ -121,30 +121,25 @@ const queryUtentiInvitati = (idEvent) => {
         let emailGlobale;
         socket.on("login", async(dizionario)=>{
             const { email, password } = dizionario;
-            console.log("email: "+email+", password: "+password);
             const query = `SELECT * FROM user WHERE username=?`;
             connectionToDB.executeQuery(query, [email]).then((response) => {
                 if (response.length > 0) {
                     const hashed_password = response[0].password;
                     bcrypt.compare(password, hashed_password).then((result) => {
-
                         if (result) {
                             emailGlobale = email;
                             const oldAssocIndex = associazioni.findIndex(a => a.email === emailGlobale);
                             if (oldAssocIndex !== -1) {
-                                console.log("Boh 1")
                                 associazioni.splice(oldAssocIndex, 1);
                                 associazioni.push({ email, socket: socket.id });
                                 io.to(socket.id).emit("login", "Accesso effettuato con successo");
                             }else{
-                                console.log("Boh 2")
                                 associazioni.push({ email, socket: socket.id });  
                                 io.to(socket.id).emit("login", "Accesso effettuato con successo");
                             }
                             io.to(socket.id).emit("login", "Accesso effettuato con successo");
                             
                         } else {
-                            console.log("Boh e")
                             io.to(socket.id).emit("login", "Credenziali errate");
                         }
                     });
@@ -371,13 +366,13 @@ const queryUtentiInvitati = (idEvent) => {
                                 "La tua nuova password è " + new_password,
                             );
 
-                            res.json({ "nuova password": new_password });
+                            res.json(true);
                         })
                         .catch((err) => console.error(err.message));
                 });
             } else {
                 // email non presente
-                res.json("email o password errata");
+                res.json("email errata");
             }
         });
     });
