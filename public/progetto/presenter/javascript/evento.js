@@ -6,30 +6,31 @@ const tipologia = document.getElementById("tipologia");
 const posizione = document.getElementById("posizione");
 const descrizione = document.getElementById("descrizione");
 const dataOraScadenza = document.getElementById("dataOraScadenza");
+const immagine = document.getElementById("immagine");
 
 window.onload = () => {
-    const user = sessionStorage.getItem("email");
-    const password = sessionStorage.getItem("password");
-    if(user && user != "" && password && password != ""){
-     socket.emit('login', {
-         email: user,
-         password: password
-     });
-    } else {
-     window.location.href = "./login.html";
-    }
-}
+  const user = sessionStorage.getItem("email");
+  const password = sessionStorage.getItem("password");
+  if (user && user != "" && password && password != "") {
+    socket.emit("login", {
+      email: user,
+      password: password,
+    });
+  } else {
+    window.location.href = "./login.html";
+  }
+};
 
-indietro.onclick = () =>{
-    window.location.href = "./home.html";
-}
+indietro.onclick = () => {
+  window.location.href = "./home.html";
+};
 
-socket.on('loginSucc', (response) => {
-   //view della pagina dopo la view dello spinner
+socket.on("loginSucc", (response) => {
+  //view della pagina dopo la view dello spinner
 });
 
-createmp.onclick = () =>{
-    /*
+createmp.onclick = () => {
+  /*
     evento.dataOraScadenza !== "" &&
                 evento.tipologia !== "" &&
                 evento.stato !== "" &&
@@ -38,17 +39,19 @@ createmp.onclick = () =>{
                 evento.posizione !== "" &&
                 evento.idUser
     */
-    socket.emit("insertEvento",{
-        dataOraScadenza: dataOraScadenza.value,
-        tipologia: tipologia.value,
-        stato: "TEST",
-        titolo: titolo.value, 
-        descrizione: descrizione.value,
-        posizione: posizione.value,
-        email: sessionStorage.getItem("email")
-    });
-}
+  console.log("immagine", immagine.value);
+  socket.emit("insertEvento", {
+    dataOraScadenza: dataOraScadenza.value,
+    tipologia: tipologia.value,
+    stato: "TEST",
+    titolo: titolo.value,
+    descrizione: descrizione.value,
+    posizione: posizione.value,
+    email: sessionStorage.getItem("email"),
+    immagine: immagine.value,
+  });
+};
 
-socket.on("insertSuccess",(response)=>{
-    console.log(response);
+socket.on("insertSuccess", (response) => {
+  console.log(response);
 });
