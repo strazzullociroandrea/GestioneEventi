@@ -7,6 +7,7 @@ const templateEvento =
   '<div class="col-4 text-center card relative"><div style="z-index:100;"><p>%TITOLO</p><p>%SCADENZA</p> <p>%DESCRIZIONE</p><p>%TIPOLOGIA</p><p>%STATO</p><button class="btn btn-info viewEvento" id="%ID">Visualizza</button></div><img src="%IMG" style="position:absolute; top:0;left:0;right:0;bottom:0; width:100%;height:100%; z-index:0"></div>';
 const eventi = document.getElementById("eventi");
 const crea = document.getElementById("crea");
+const inviti = document.getElementById("inviti");
 
 window.onload = () => {
   const user = sessionStorage.getItem("email");
@@ -20,6 +21,10 @@ window.onload = () => {
     window.location.href = "./login.html";
   }
 };
+
+inviti.onclick = () =>{
+  window.location.href = "./inviti.html";
+}
 
 logout.onclick = () => {
   sessionStorage.clear();

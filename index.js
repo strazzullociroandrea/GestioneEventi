@@ -11,6 +11,7 @@ const { Server } = require("socket.io");
 
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+//mancano i controlli sicurezza e try-catch
 
 app.use(bodyParser.json());
 app.use(
@@ -154,7 +155,37 @@ function generateRandomString(iLen) {
         console.log(e);
       }
     });
-
+    socket.on("getInviti", async (email) => {
+      if (email && email !== "") {
+        const sql = "SELECT evento.titolo, invitare.idUser, invitare.idEvento FROM evento INNER JOIN invitare ON evento.id = invitare.idEvento INNER JOIN user ON user.id = invitare.idUser WHERE user.username = ? AND invitare.stato = 'Da accettare'";
+        const titoli = await connectionToDB.executeQuery(sql, [email]);
+        const final = [];
+        await Promise.all(titoli.map(async (titolo) => {
+          const sqlProprietario = "SELECT user.username FROM user INNER JOIN evento ON evento.idUser = user.id";
+          const username = await connectionToDB.executeQuery(sqlProprietario, [titolo.titolo]);
+          final.push({
+            titolo: titolo.titolo,
+            proprietario: username[0].username,
+            idUser: titolo.idUser,
+            idEvento: titolo.idEvento
+          });
+        }));
+        io.to(socket.id).emit("resultGetInviti", { result: final });
+      } else {
+        io.to(socket.id).emit("resultGetInviti", { result: [] });
+      }
+    });
+    socket.on("accettaInvito", async(dizionario)=>{
+      const {idEvento, idUser} = dizionario;
+      if(idEvento && idEvento != "" && idUser && idUser != ""){
+        const sqlUpdate = "UPDATE invitare SET stato = 'Accettato' WHERE idEvento = ? AND idUser = ?";
+        await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
+        io.to(socket.id).emit("accettaInvitoRes", true);
+      }else{
+        io.to(socket.id).emit("accettaInvitoRes", false);
+      }
+    })
+    
     socket.on("getAllUserEvents", async (email) => {
       if (email !== "") {
         queryGetAllUserEvents(email)
@@ -330,9 +361,9 @@ function generateRandomString(iLen) {
                     email,
                     "Registrazione Avvenuta con successo",
                     "Ciao <strong>" +
-                      email +
-                      "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
-                      password
+                    email +
+                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                    password
                   );
 
                   res.json({ result: "ok" });
