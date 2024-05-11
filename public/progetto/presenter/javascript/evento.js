@@ -32,7 +32,7 @@ socket.on("loginSucc", (response) => {
 
 createmp.onclick = () => {
   spinner.classList.remove("d-none");
-  console.log("immagine", immagine.value);
+  //console.log("immagine", immagine.value);
   socket.emit("insertEvento", {
     dataOraScadenza: dataOraScadenza.value,
     tipologia: tipologia.value,
@@ -46,6 +46,6 @@ createmp.onclick = () => {
 };
 
 socket.on("insertSuccess", (response) => {
-  console.log(response);
+  //console.log(response);
   spinner.classList.add("d-none");
 });

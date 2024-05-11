@@ -34,7 +34,7 @@ resetPassword.onclick = () => {
         };
         fetchResetPassword(dict)
         .then((response) => {
-            console.log(response);
+            //console.log(response);
             if (response === true)  {
                 window.location.href = './login.html';
             } else {

@@ -34,7 +34,7 @@ const invita = (array, evento, ev) => {
   return new Promise((resolve, reject) => {
     const eventiSospesi = [];
     array.forEach((utente) => {
-      console.log(utente);
+      //console.log(utente);
       const associazione = associazioni.find((element) => {
         return element?.email == utente;
       });
@@ -224,7 +224,7 @@ function generateRandomString(iLen) {
               io.to(socket.id).emit("getResult", { result: json });
             })
             .catch((error) => {
-              console.log(error);
+              //console.log(error);
               io.to(socket.id).emit("getResult", { result: [] });
             });
         }
@@ -374,7 +374,7 @@ function generateRandomString(iLen) {
         res.json({ result: "errore - le password non coincidono" });
         errors = true;
       }
-      console.log(email);
+      //console.log(email);
       // Controllo che sia del Molinari
       const splitted = email.split("@");
       if (splitted[1] != "itis-molinari.eu") {
@@ -417,8 +417,8 @@ function generateRandomString(iLen) {
         });
       }
     } catch (e) {
-      console.log("registrazione error");
-      console.log(e);
+      //console.log("registrazione error");
+      //console.log(e);
     }
   });
 
@@ -456,7 +456,7 @@ function generateRandomString(iLen) {
         }
       });
     }catch(e){
-      console.log(e);
+      //console.log(e);
     }
     
   });
@@ -487,6 +487,6 @@ function generateRandomString(iLen) {
    *Avvio del serever
    */
   server.listen(conf.port, () => {
-    console.log("---> server running on port " + conf.port);
+    //console.log("---> server running on port " + conf.port);
   });
 })();

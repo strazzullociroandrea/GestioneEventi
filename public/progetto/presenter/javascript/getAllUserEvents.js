@@ -68,7 +68,7 @@ socket.on("getResult", (response) => {
   eventi.innerHTML = html;
   document.querySelectorAll(".viewEvento").forEach((button) => {
     button.onclick = () => {
-      console.log(button.id);
+      //console.log(button.id);
       //window.location.href = "./evento.html?idEvento="+button.id
     };
   });
