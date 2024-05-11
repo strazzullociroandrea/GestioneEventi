@@ -160,6 +160,7 @@ function generateRandomString(iLen) {
         io.to(socket.id).emit("resultGetEvento", { result: e });
       }
     });
+    //funzione per recuperare gli inviti - stato=> 'Da accettare'
     socket.on("getInviti", async (email) => {
       try{
         if (email && email !== "") {
@@ -185,6 +186,7 @@ function generateRandomString(iLen) {
       }
       
     });
+    //servizio per accettare l'invito
     socket.on("accettaInvito", async(dizionario)=>{
       try{
         const {idEvento, idUser} = dizionario;
@@ -199,6 +201,7 @@ function generateRandomString(iLen) {
         io.to(socket.id).emit("accettaInvitoRes", e);
       }
     })
+    //servizio per rifiutare l'invito
     socket.on("rifiutaInvito", async(dizionario)=>{
       try{
         const {idEvento, idUser} = dizionario;
@@ -222,7 +225,7 @@ function generateRandomString(iLen) {
             })
             .catch((error) => {
               console.log(error);
-              //io.to(socket.id).emit("getResult", { result: [] });
+              io.to(socket.id).emit("getResult", { result: [] });
             });
         }
       }catch(e){
@@ -285,18 +288,17 @@ function generateRandomString(iLen) {
       }
       
     });
+    //servizio per inserire un evento
     socket.on("insertEvento", async (evento) => {
       try{
         if (
           evento.dataOraScadenza !== "" &&
           evento.tipologia !== "" &&
-          /* evento.stato !== "" &&*/
           evento.titolo !== "" &&
           evento.descrizione !== "" &&
           evento.posizione !== "" &&
           evento.email
         ) {
-          console.log(evento);
           await queryInsertEvent(evento);
           io.to(socket.id).emit("insertSuccess", {
             result: "OK",
@@ -456,8 +458,31 @@ function generateRandomString(iLen) {
     }
     
   });
+  app.post("/changePassword",async(req, res)=>{
+    const {username, newPassword} = req.body;
+    if(username  && username != "" && newPassword && newPassword != ""){
+      bcrypt.hash(newPassword, saltRounds).then(async(hashed_password) => {
+        const sql = "UPDATE user SET password = ? WHERE username = ?"
+        await connectionToDB.executeQuery(sql,[hashed_password, username]);
+        res.json({result: true});
+      });
+      
+    }else{
+      res.json({result: false});
+    }
+  })
+  app.post("/deleteAccount", async(req, res)=>{
+    const {username} = req.body;
+    if(username && username != ""){
+      const sql = "DELETE user  WHERE username = ?"
+      await connectionToDB.executeQuery(sql,[username]);
+      res.json({result: true});
+    }else{
+      res.json({result: false});
+    }
+  })
   /**
-   *
+   *Avvio del serever
    */
   server.listen(conf.port, () => {
     console.log("---> server running on port " + conf.port);

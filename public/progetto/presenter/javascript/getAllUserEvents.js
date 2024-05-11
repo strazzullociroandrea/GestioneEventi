@@ -8,6 +8,11 @@ const templateEvento =
 const eventi = document.getElementById("eventi");
 const crea = document.getElementById("crea");
 const inviti = document.getElementById("inviti");
+const profilo = document.getElementById("profilo");
+
+profilo.onclick = () =>{
+  window.location.href = "./profilo.html";
+}
 
 window.onload = () => {
   const user = sessionStorage.getItem("email");
