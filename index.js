@@ -11,7 +11,7 @@ const { Server } = require("socket.io");
 
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-//mancano i controlli sicurezza e try-catch
+//mancano i controlli sicurezza e inviti in tempo reale tramite notifica
 
 app.use(bodyParser.json());
 app.use(
@@ -105,182 +105,213 @@ function generateRandomString(iLen) {
   io.on("connection", (socket) => {
     let emailGlobale;
     socket.on("login", async (dizionario) => {
-      const { email, password } = dizionario;
-      const query = `SELECT * FROM user WHERE username=?`;
-      connectionToDB.executeQuery(query, [email]).then((response) => {
-        if (response.length > 0) {
-          const hashed_password = response[0].password;
-          bcrypt.compare(password, hashed_password).then((result) => {
-            if (result) {
-              emailGlobale = email;
-              const oldAssocIndex = associazioni.findIndex(
-                (a) => a.email === emailGlobale
-              );
-              if (oldAssocIndex !== -1) {
-                associazioni.splice(oldAssocIndex, 1);
-                associazioni.push({ email, socket: socket.id });
+      try{
+        const { email, password } = dizionario;
+        const query = `SELECT * FROM user WHERE username=?`;
+        connectionToDB.executeQuery(query, [email]).then((response) => {
+          if (response.length > 0) {
+            const hashed_password = response[0].password;
+            bcrypt.compare(password, hashed_password).then((result) => {
+              if (result) {
+                emailGlobale = email;
+                const oldAssocIndex = associazioni.findIndex(
+                  (a) => a.email === emailGlobale
+                );
+                if (oldAssocIndex !== -1) {
+                  associazioni.splice(oldAssocIndex, 1);
+                  associazioni.push({ email, socket: socket.id });
+                  io.to(socket.id).emit(
+                    "loginSucc",
+                    "Accesso effettuato con successo"
+                  );
+                } else {
+                  associazioni.push({ email, socket: socket.id });
+                  io.to(socket.id).emit(
+                    "loginSucc",
+                    "Accesso effettuato con successo"
+                  );
+                }
                 io.to(socket.id).emit(
                   "loginSucc",
                   "Accesso effettuato con successo"
                 );
               } else {
-                associazioni.push({ email, socket: socket.id });
-                io.to(socket.id).emit(
-                  "loginSucc",
-                  "Accesso effettuato con successo"
-                );
+                io.to(socket.id).emit("loginSucc", "Credenziali errate");
               }
-              io.to(socket.id).emit(
-                "loginSucc",
-                "Accesso effettuato con successo"
-              );
-            } else {
-              io.to(socket.id).emit("loginSucc", "Credenziali errate");
-            }
-          });
-        } else {
-          io.to(socket.id).emit("loginSucc", "Credenziali errate");
-        }
-      });
+            });
+          } else {
+            io.to(socket.id).emit("loginSucc", "Credenziali errate");
+          }
+        });
+      }catch(e){
+        io.to(socket.id).emit("loginSucc", e);
+      }
     });
     socket.on("getEvento", async (idEvento) => {
       //bisogna conrtollare che chi lo vuole vedere sia un invitato o il proprietario altrimenti restituisce un arrya vuoto
       try {
+        //bisogna prendere anche gli inviti solo se sono accettati
         const rsp = await connectionToDB.executeQuery(
           "SELECT * FROM evento WHERE id=?",
           [idEvento]
         );
         io.to(socket.id).emit("resultGetEvento", { result: rsp });
       } catch (e) {
-        console.log(e);
+        io.to(socket.id).emit("resultGetEvento", { result: e });
       }
     });
     socket.on("getInviti", async (email) => {
-      if (email && email !== "") {
-        const sql = "SELECT evento.titolo, invitare.idUser, invitare.idEvento FROM evento INNER JOIN invitare ON evento.id = invitare.idEvento INNER JOIN user ON user.id = invitare.idUser WHERE user.username = ? AND invitare.stato = 'Da accettare'";
-        const titoli = await connectionToDB.executeQuery(sql, [email]);
-        const final = [];
-        await Promise.all(titoli.map(async (titolo) => {
-          const sqlProprietario = "SELECT user.username FROM user INNER JOIN evento ON evento.idUser = user.id";
-          const username = await connectionToDB.executeQuery(sqlProprietario, [titolo.titolo]);
-          final.push({
-            titolo: titolo.titolo,
-            proprietario: username[0].username,
-            idUser: titolo.idUser,
-            idEvento: titolo.idEvento
-          });
-        }));
-        io.to(socket.id).emit("resultGetInviti", { result: final });
-      } else {
-        io.to(socket.id).emit("resultGetInviti", { result: [] });
+      try{
+        if (email && email !== "") {
+          const sql = "SELECT evento.titolo, invitare.idUser, invitare.idEvento FROM evento INNER JOIN invitare ON evento.id = invitare.idEvento INNER JOIN user ON user.id = invitare.idUser WHERE user.username = ? AND invitare.stato = 'Da accettare'";
+          const titoli = await connectionToDB.executeQuery(sql, [email]);
+          const final = [];
+          await Promise.all(titoli.map(async (titolo) => {
+            const sqlProprietario = "SELECT user.username FROM user INNER JOIN evento ON evento.idUser = user.id";
+            const username = await connectionToDB.executeQuery(sqlProprietario, [titolo.titolo]);
+            final.push({
+              titolo: titolo.titolo,
+              proprietario: username[0].username,
+              idUser: titolo.idUser,
+              idEvento: titolo.idEvento
+            });
+          }));
+          io.to(socket.id).emit("resultGetInviti", { result: final });
+        } else {
+          io.to(socket.id).emit("resultGetInviti", { result: [] });
+        }
+      }catch(e){
+        io.to(socket.id).emit("resultGetInviti", { result: e });
       }
+      
     });
     socket.on("accettaInvito", async(dizionario)=>{
-      const {idEvento, idUser} = dizionario;
-      if(idEvento && idEvento != "" && idUser && idUser != ""){
-        const sqlUpdate = "UPDATE invitare SET stato = 'Accettato' WHERE idEvento = ? AND idUser = ?";
-        await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
-        io.to(socket.id).emit("accettaInvitoRes", true);
-      }else{
-        io.to(socket.id).emit("accettaInvitoRes", false);
+      try{
+        const {idEvento, idUser} = dizionario;
+        if(idEvento && idEvento != "" && idUser && idUser != ""){
+          const sqlUpdate = "UPDATE invitare SET stato = 'Accettato' WHERE idEvento = ? AND idUser = ?";
+          await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
+          io.to(socket.id).emit("accettaInvitoRes", true);
+        }else{
+          io.to(socket.id).emit("accettaInvitoRes", false);
+        }
+      }catch(e){
+        io.to(socket.id).emit("accettaInvitoRes", e);
       }
     })
     socket.on("rifiutaInvito", async(dizionario)=>{
-      const {idEvento, idUser} = dizionario;
-      if(idEvento && idEvento != "" && idUser && idUser != ""){
-        const sqlUpdate = "UPDATE invitare SET stato = 'Non accettato' WHERE idEvento = ? AND idUser = ?";
-        await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
-        io.to(socket.id).emit("rifiutaInvitoRes", true);
-      }else{
-        io.to(socket.id).emit("rifiutaInvitoRes", false);
+      try{
+        const {idEvento, idUser} = dizionario;
+        if(idEvento && idEvento != "" && idUser && idUser != ""){
+          const sqlUpdate = "UPDATE invitare SET stato = 'Non accettato' WHERE idEvento = ? AND idUser = ?";
+          await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
+          io.to(socket.id).emit("rifiutaInvitoRes", true);
+        }else{
+          io.to(socket.id).emit("rifiutaInvitoRes", false);
+        }
+      }catch(e){
+        io.to(socket.id).emit("rifiutaInvitoRes", e);
       }
     })
     socket.on("getAllUserEvents", async (email) => {
-      if (email !== "") {
-        queryGetAllUserEvents(email)
-          .then((json) => {
-            io.to(socket.id).emit("getResult", { result: json });
-          })
-          .catch((error) => {
-            console.log(error);
-            //io.to(socket.id).emit("getResult", { result: [] });
-          });
+      try{
+        if (email !== "") {
+          queryGetAllUserEvents(email)
+            .then((json) => {
+              io.to(socket.id).emit("getResult", { result: json });
+            })
+            .catch((error) => {
+              console.log(error);
+              //io.to(socket.id).emit("getResult", { result: [] });
+            });
+        }
+      }catch(e){
+        io.to(socket.id).emit("getResult", { result: e });
       }
     });
     //manca la possibilità di cambiare/aggiungere immagini e gli invitati
     socket.on("updateEvento", async (dizionario) => {
-      const {
-        id,
-        dataOraScadenza,
-        tipologia,
-        stato,
-        titolo,
-        descrizione,
-        posizione,
-      } = dizionario;
-      if (id != "") {
-        let query = "UPDATE evento SET ";
-        const array = [];
-        if (dataOraScadenza != "") {
-          query += " dataOraScadenza = ?";
-          array.push(dataOraScadenza);
-        }
-        if (tipologia != "") {
-          query += " tipologia = ?";
-          array.push(tipologia);
-        }
-        if (stato != "") {
-          query += " stato = ?";
-          array.push(stato);
-        }
-        if (titolo != "") {
-          query += " titolo = ?";
-          array.push(titolo);
-        }
-        if (descrizione != "") {
-          query += " descrizione = ?";
-          array.push(descrizione);
-        }
-        if (posizione != "") {
-          query += " posizione = ?";
-          array.push(posizione);
-        }
-        query += "WHERE id=? SET";
-        if (array.length > 0) {
-          const rsp = await connectionToDB.executeQuery(query, array);
-          io.to(socket.id).emit("resultUpdateEvento", { result: rsp });
+      try{
+        const {
+          id,
+          dataOraScadenza,
+          tipologia,
+          stato,
+          titolo,
+          descrizione,
+          posizione,
+        } = dizionario;
+        if (id != "") {
+          let query = "UPDATE evento SET ";
+          const array = [];
+          if (dataOraScadenza != "") {
+            query += " dataOraScadenza = ?";
+            array.push(dataOraScadenza);
+          }
+          if (tipologia != "") {
+            query += " tipologia = ?";
+            array.push(tipologia);
+          }
+          if (stato != "") {
+            query += " stato = ?";
+            array.push(stato);
+          }
+          if (titolo != "") {
+            query += " titolo = ?";
+            array.push(titolo);
+          }
+          if (descrizione != "") {
+            query += " descrizione = ?";
+            array.push(descrizione);
+          }
+          if (posizione != "") {
+            query += " posizione = ?";
+            array.push(posizione);
+          }
+          query += "WHERE id=? SET";
+          if (array.length > 0) {
+            const rsp = await connectionToDB.executeQuery(query, array);
+            io.to(socket.id).emit("resultUpdateEvento", { result: rsp });
+          } else {
+            io.to(socket.id).emit("resultUpdateEvento", { result: false });
+          }
         } else {
-          io.to(socket.id).emit("resultUpdateEvento", { result: false });
+          io.to(socket.id).emit("resultUpdateEvento", {
+            result: "Id evento non settato",
+          });
         }
-      } else {
-        io.to(socket.id).emit("resultUpdateEvento", {
-          result: "Id evento non settato",
-        });
+      }catch(e){
+        io.to(socket.id).emit("resultUpdateEvento", { result: e });
       }
+      
     });
     socket.on("insertEvento", async (evento) => {
-      if (
-        evento.dataOraScadenza !== "" &&
-        evento.tipologia !== "" &&
-        /* evento.stato !== "" &&*/
-        evento.titolo !== "" &&
-        evento.descrizione !== "" &&
-        evento.posizione !== "" &&
-        evento.email
-      ) {
-        console.log(evento);
-        await queryInsertEvent(evento);
-        io.to(socket.id).emit("insertSuccess", {
-          result: "OK",
-        });
-      } else {
-        io.to(socket.id).emit("insertSuccess", {
-          result: "Non è stato possibile aggiungere l'evento",
-        });
+      try{
+        if (
+          evento.dataOraScadenza !== "" &&
+          evento.tipologia !== "" &&
+          /* evento.stato !== "" &&*/
+          evento.titolo !== "" &&
+          evento.descrizione !== "" &&
+          evento.posizione !== "" &&
+          evento.email
+        ) {
+          console.log(evento);
+          await queryInsertEvent(evento);
+          io.to(socket.id).emit("insertSuccess", {
+            result: "OK",
+          });
+        } else {
+          io.to(socket.id).emit("insertSuccess", {
+            result: "Non è stato possibile aggiungere l'evento",
+          });
+        }
+      }catch(e){
+        io.to(socket.id).emit("insertSuccess", {result: e});
       }
     });
   });
-
+  //da trasformare in socket
   app.post("/deleteEvento", (req, res) => {
     const event = req.body.event;
     if (event.idEvento !== "" && event.idUtente !== "") {
@@ -357,7 +388,6 @@ function generateRandomString(iLen) {
             res.json({ result: "errore - email già registrata" });
           } else {
             // Ok non è registrato
-
             // Cripto la password
             bcrypt.hash(password, saltRounds).then((hashed_password) => {
               const query = `INSERT INTO user (username, password) VALUES (?, ?)`;
@@ -392,68 +422,40 @@ function generateRandomString(iLen) {
    * Reset della password
    */
   app.post("/reset_password", (req, res) => {
-    const { email } = req.body;
-    const query = `SELECT * FROM user WHERE username=?`;
-    connectionToDB.executeQuery(query, [email]).then((response) => {
-      if (response.length > 0) {
-        // Creo una password nuova e la mando via mail all'utente
-        const new_password = generateRandomString(8);
-        bcrypt.hash(new_password, saltRounds).then((hashed_password) => {
-          const query = `UPDATE user SET password = ? WHERE username = ?`;
-          connectionToDB
-            .executeQuery(query, [hashed_password, email])
-            .then((response) => {
-              // Invio mail di conferma all'utente con la password presente in new_password
-              emailer.send(
-                conf,
-                email,
-                "Password reimpostata",
-                "La tua nuova password è " + new_password
-              );
-
-              res.json(true);
-            })
-            .catch((err) => console.error(err.message));
-        });
-      } else {
-        // email non presente
-        res.json("email errata");
-      }
-    });
+    try{
+      const { email } = req.body;
+      const query = `SELECT * FROM user WHERE username=?`;
+      connectionToDB.executeQuery(query, [email]).then((response) => {
+        if (response.length > 0) {
+          // Creo una password nuova e la mando via mail all'utente
+          const new_password = generateRandomString(8);
+          bcrypt.hash(new_password, saltRounds).then((hashed_password) => {
+            const query = `UPDATE user SET password = ? WHERE username = ?`;
+            connectionToDB
+              .executeQuery(query, [hashed_password, email])
+              .then((response) => {
+                // Invio mail di conferma all'utente con la password presente in new_password
+                emailer.send(
+                  conf,
+                  email,
+                  "Password reimpostata",
+                  "La tua nuova password è " + new_password
+                );
+  
+                res.json(true);
+              })
+              .catch((err) => console.error(err.message));
+          });
+        } else {
+          // email non presente
+          res.json("email errata");
+        }
+      });
+    }catch(e){
+      console.log(e);
+    }
+    
   });
-
-  app.get("/get-user-invitations", (req, res) => {
-    const uid = req.query["user-id"];
-    console.log("uid = " + uid);
-
-    const query = `SELECT evento.id, evento.titolo, evento.tipologia, evento.stato, evento.dataOraScadenza, evento.posizione, evento.descrizione, invitare.stato as stato_invito FROM invitare left join evento on invitare.idEvento = evento.id WHERE invitare.idUser=? `;
-    connectionToDB.executeQuery(query, [uid]).then((response) => {
-      if (response.length > 0) {
-        // Creo una password nuova e la mando via mail all'utente
-        res.json(response);
-      } else {
-        // email non presente
-        res.json("Nessun invito");
-      }
-    });
-  });
-
-  app.post("/accept-invitation", (req, res) => {
-    const { userId, eventId } = req.body;
-    const query = `UPDATE invitare SET stato='accettato' WHERE idUser=? AND idEvento=?`;
-    connectionToDB.executeQuery(query, [userId, eventId]).then((response) => {
-      res.json({ result: "ok" });
-    });
-  });
-
-  app.post("/reject-invitation", (req, res) => {
-    const { userId, eventId } = req.body;
-    const query = `UPDATE invitare SET stato='rifiutato' WHERE idUser=? AND idEvento=?`;
-    connectionToDB.executeQuery(query, [userId, eventId]).then((response) => {
-      res.json({ result: "ok" });
-    });
-  });
-
   /**
    *
    */
