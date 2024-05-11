@@ -1,7 +1,7 @@
 const indietro = document.getElementById("indietro");
 const socket = io();
 const inviti = document.getElementById("inviti");
-const templateInvito = '<div class="row card"><table class="w-100"><tr> <td><p>%PROPRIETARIO ti ha invitato a partecipare ad un evento chiamato <b>%TITOLOEVENTO</b></p></td><td><button class="btn btn-success btnacc" id="%ID">Accetta</button></td><td><button class="btn btn-danger">Elimina</button></td></tr></table></div>'
+const templateInvito = '<div class="row card"><table class="w-100"><tr> <td><p>%PROPRIETARIO ti ha invitato a partecipare ad un evento chiamato <b>%TITOLOEVENTO</b></p></td><td><button class="btn btn-success btnacc" id="%ID">Accetta</button></td><td><button class="btn btn-danger btndel" id="%ID">Elimina</button></td></tr></table></div>'
 console.log("ciao");
 window.onload = () => {
     const user = sessionStorage.getItem("email");
@@ -28,6 +28,11 @@ socket.on('accettaInvitoRes', (response) => {
         socket.emit("getInviti", sessionStorage.getItem("email"));
     }
 });
+socket.on('rifiutaInvitoRes', (response) => {
+    if (response) {
+        socket.emit("getInviti", sessionStorage.getItem("email"));
+    }
+});
 socket.on('resultGetInviti', (response) => {
     console.log("Sei stato invitato in: ");
     console.log(response);
@@ -46,6 +51,16 @@ socket.on('resultGetInviti', (response) => {
                 });
             }
         })
+        document.querySelectorAll(".btndel").forEach(button=>{
+            button.onclick = () =>{
+                const id = button.id.split("_");
+                const idUser = id[0], idEvento = id[1];
+                socket.emit("rifiutaInvito", {
+                    idEvento, idUser
+                });
+            }
+        })
+        
     }else{
         inviti.innerHTML = "<p>Non hai inviti da accettare</p>";
     }

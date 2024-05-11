@@ -185,7 +185,16 @@ function generateRandomString(iLen) {
         io.to(socket.id).emit("accettaInvitoRes", false);
       }
     })
-    
+    socket.on("rifiutaInvito", async(dizionario)=>{
+      const {idEvento, idUser} = dizionario;
+      if(idEvento && idEvento != "" && idUser && idUser != ""){
+        const sqlUpdate = "UPDATE invitare SET stato = 'Non accettato' WHERE idEvento = ? AND idUser = ?";
+        await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
+        io.to(socket.id).emit("rifiutaInvitoRes", true);
+      }else{
+        io.to(socket.id).emit("rifiutaInvitoRes", false);
+      }
+    })
     socket.on("getAllUserEvents", async (email) => {
       if (email !== "") {
         queryGetAllUserEvents(email)
