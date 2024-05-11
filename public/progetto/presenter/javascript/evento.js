@@ -7,6 +7,7 @@ const posizione = document.getElementById("posizione");
 const descrizione = document.getElementById("descrizione");
 const dataOraScadenza = document.getElementById("dataOraScadenza");
 const immagine = document.getElementById("immagine");
+const spinner = document.getElementById("spinner");
 
 window.onload = () => {
   const user = sessionStorage.getItem("email");
@@ -26,19 +27,11 @@ indietro.onclick = () => {
 };
 
 socket.on("loginSucc", (response) => {
-  //view della pagina dopo la view dello spinner
+  spinner.classList.add("d-none");
 });
 
 createmp.onclick = () => {
-  /*
-    evento.dataOraScadenza !== "" &&
-                evento.tipologia !== "" &&
-                evento.stato !== "" &&
-                evento.titolo !== "" &&
-                evento.descrizione !== "" &&
-                evento.posizione !== "" &&
-                evento.idUser
-    */
+  spinner.classList.remove("d-none");
   console.log("immagine", immagine.value);
   socket.emit("insertEvento", {
     dataOraScadenza: dataOraScadenza.value,
@@ -54,4 +47,5 @@ createmp.onclick = () => {
 
 socket.on("insertSuccess", (response) => {
   console.log(response);
+  spinner.classList.add("d-none");
 });

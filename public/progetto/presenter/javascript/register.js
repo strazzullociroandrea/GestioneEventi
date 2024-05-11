@@ -4,8 +4,10 @@ const password = document.getElementById('password');
 const confirm_password = document.getElementById('confirm_password');
 const divAlert = document.getElementById('alert');
 const testoAlert = document.getElementById('testoAlert');
+const spinner = document.getElementById("spinner");
 
 const fetchRegister = (dict) => {
+
     return new Promise((resolve, reject) => {
         fetch("/register", {
             method: "POST",
@@ -27,12 +29,12 @@ const fetchRegister = (dict) => {
 };
 
 register.onclick = () => {
+    spinner.classList.remove("d-none");
     const dict = {
         email: email.value,
         password: password.value,
         confirm_password: confirm_password.value,
     }
-
     fetchRegister(dict)
         .then((response) => {
             if (response.result === "ok") {
@@ -46,5 +48,7 @@ register.onclick = () => {
                 testoAlert.innerText = response.result;
                 divAlert.classList.remove('d-none');
             }
+            spinner.classList.add("d-none");
+
         })
 }

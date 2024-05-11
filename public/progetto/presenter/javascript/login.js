@@ -4,9 +4,12 @@ const password = document.getElementById('password');
 const socket = io();
 const divAlert = document.getElementById('alert');
 const testoAlert = document.getElementById('testoAlert');
+const spinner = document.getElementById("spinner");
 let mailTemp = "";
 let passwordTemp = "";
 login.onclick = () => {
+    spinner.classList.remove("d-none");
+    divAlert.classList.add('d-none');
     mailTemp = email.value;
     passwordTemp =  password.value;
     const dict = {
@@ -17,13 +20,10 @@ login.onclick = () => {
 }
 
 socket.on('loginSucc', (response) => {
-    console.log(response);
     if (response === "Accesso effettuato con successo") {
         divAlert.classList.add('d-none');
         sessionStorage.setItem('email', mailTemp);
         sessionStorage.setItem('password', passwordTemp);
-        console.log("email.value");
-        console.log(mailTemp);
         email.value = "";
         password.value = "";
         window.location.href = './home.html';
@@ -31,14 +31,18 @@ socket.on('loginSucc', (response) => {
         testoAlert.innerText = response;
         divAlert.classList.remove('d-none');
     }
+    spinner.classList.add("d-none");
 })
 
 window.onload = () => {
-    if (sessionStorage.getItem('email') !== undefined && sessionStorage.getItem('password') !== undefined && sessionStorage.getItem('email') !== "" && sessionStorage.getItem('password') !== "") {
-        const dict = {
-            email: sessionStorage.getItem('email'),
-            password: sessionStorage.getItem('password'),
+    if(sessionStorage.getItem('email')){
+        if (sessionStorage.getItem('email') !== undefined && sessionStorage.getItem('password') !== undefined && sessionStorage.getItem('email') !== "" && sessionStorage.getItem('password') !== "") {
+            const dict = {
+                email: sessionStorage.getItem('email'),
+                password: sessionStorage.getItem('password'),
+            }
+            socket.emit('login', dict);
         }
-        socket.emit('login', dict);
     }
+    spinner.classList.add("d-none");
 }

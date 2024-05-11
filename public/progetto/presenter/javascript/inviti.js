@@ -2,7 +2,8 @@ const indietro = document.getElementById("indietro");
 const socket = io();
 const inviti = document.getElementById("inviti");
 const templateInvito = '<div class="row card"><table class="w-100"><tr> <td><p>%PROPRIETARIO ti ha invitato a partecipare ad un evento chiamato <b>%TITOLOEVENTO</b></p></td><td><button class="btn btn-success btnacc" id="%ID">Accetta</button></td><td><button class="btn btn-danger btndel" id="%ID">Elimina</button></td></tr></table></div>'
-console.log("ciao");
+const spinner = document.getElementById("spinner");
+
 window.onload = () => {
     const user = sessionStorage.getItem("email");
     const password = sessionStorage.getItem("password");
@@ -34,8 +35,6 @@ socket.on('rifiutaInvitoRes', (response) => {
     }
 });
 socket.on('resultGetInviti', (response) => {
-    console.log("Sei stato invitato in: ");
-    console.log(response);
     let html = "";
     response.result.forEach(invito =>{
         html += templateInvito.replace("%TITOLOEVENTO", invito.titolo).replace("%PROPRIETARIO", invito.proprietario).replaceAll("%ID", invito.idUser+"_"+invito.idEvento);
@@ -44,6 +43,7 @@ socket.on('resultGetInviti', (response) => {
         inviti.innerHTML = html;
         document.querySelectorAll(".btnacc").forEach(button=>{
             button.onclick = () =>{
+                spinner.classList.remove("d-none");
                 const id = button.id.split("_");
                 const idUser = id[0], idEvento = id[1];
                 socket.emit("accettaInvito", {
@@ -53,6 +53,7 @@ socket.on('resultGetInviti', (response) => {
         })
         document.querySelectorAll(".btndel").forEach(button=>{
             button.onclick = () =>{
+                spinner.classList.remove("d-none");
                 const id = button.id.split("_");
                 const idUser = id[0], idEvento = id[1];
                 socket.emit("rifiutaInvito", {
@@ -64,9 +65,11 @@ socket.on('resultGetInviti', (response) => {
     }else{
         inviti.innerHTML = "<p>Non hai inviti da accettare</p>";
     }
+    spinner.classList.add("d-none");
 });
 
 indietro.onclick = () =>{
+    spinner.classList.remove("d-none");
     window.history.back();
 }
 socket.on("invitato",(response)=>{

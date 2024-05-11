@@ -11,7 +11,7 @@ const { Server } = require("socket.io");
 
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-//mancano i controlli sicurezza e inviti in tempo reale tramite notifica
+//mancano i controlli sicurezza e inviti in tempo reale tramite notifica, manca la possibilità di eliminare un evento solo se si è il proprietario ed anche di contrassegnarlo come completato
 
 app.use(bodyParser.json());
 app.use(

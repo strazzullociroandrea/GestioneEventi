@@ -3,7 +3,7 @@ const username = document.getElementById("username");
 const newPassword = document.getElementById("newPassword");
 const conferma = document.getElementById("conferma");
 const elimina = document.getElementById("elimina");
-
+const spinner = document.getElementById("spinner");
 const socket = io();
 
 window.onload = () => {
@@ -22,15 +22,18 @@ window.onload = () => {
 socket.on("loginSucc", (response) => {
     if (response === "Accesso effettuato con successo") {
         username.value = sessionStorage.getItem("email");
+        spinner.classList.add("d-none");
     } else {
         window.location.href = "./login.html";
     }
 });
 indietro.onclick = () => {
+    spinner.classList.remove("d-none");
     window.history.back();
 }
 
 conferma.onclick = async() =>{
+    spinner.classList.add("d-none");
     newPassword.classList.remove("border-danger");
     newPassword.classList.remove("border-success");
     let rsp = await fetch("/changePassword",{
@@ -51,9 +54,11 @@ conferma.onclick = async() =>{
         newPassword.classList.add("border-danger");
     }
     newPassword.value = "";
+    spinner.classList.remove("d-none");
 }
 
 elimina.onclick = async() =>{
+    spinner.classList.remove("d-none");
     let rsp = await fetch("/deleteAccount",{
         method: "POST",
         headers:{
@@ -65,10 +70,7 @@ elimina.onclick = async() =>{
     });
     rsp = await rsp.json();
     if(rsp.result){
-        setTimeout(()=>{
-            sessionStorage.clear();
-            window.location.href="./login.html";
-        },1000);
+        sessionStorage.clear();
+        window.location.href="./login.html";
     }
-    
 }

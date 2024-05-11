@@ -9,8 +9,10 @@ const eventi = document.getElementById("eventi");
 const crea = document.getElementById("crea");
 const inviti = document.getElementById("inviti");
 const profilo = document.getElementById("profilo");
+const spinner = document.getElementById("spinner");
 
 profilo.onclick = () =>{
+  spinner.classList.remove("d-none");
   window.location.href = "./profilo.html";
 }
 
@@ -28,10 +30,12 @@ window.onload = () => {
 };
 
 inviti.onclick = () =>{
+  spinner.classList.remove("d-none");
   window.location.href = "./inviti.html";
 }
 
 logout.onclick = () => {
+  spinner.classList.remove("d-none");
   sessionStorage.clear();
   window.location.href = "./login.html";
 };
@@ -68,9 +72,11 @@ socket.on("getResult", (response) => {
       //window.location.href = "./evento.html?idEvento="+button.id
     };
   });
+  spinner.classList.add("d-none");
 });
 
 crea.onclick = () => {
+  spinner.classList.remove("d-none");
   window.location.href = "./evento.html";
 };
 socket.on("invitato",(response)=>{
