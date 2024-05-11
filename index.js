@@ -288,7 +288,7 @@ function generateRandomString(iLen) {
       }
       
     });
-    //servizio per inserire un evento
+    //servizio per inserire un evento - controllare che ci siano persone invitate che non sono iscritte
     socket.on("insertEvento", async (evento) => {
       try{
         if (
@@ -315,7 +315,8 @@ function generateRandomString(iLen) {
       }
     });
   });
-  //da trasformare in socket
+  
+  //da trasformare in socket ed inviare la notifica ai client che quando la ricevono rifanno il render della pagina
   app.post("/deleteEvento", (req, res) => {
     const event = req.body.event;
     if (event.idEvento !== "" && event.idUtente !== "") {

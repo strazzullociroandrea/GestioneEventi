@@ -32,7 +32,12 @@ socket.on("loginSucc", (response) => {
 
 createmp.onclick = () => {
   spinner.classList.remove("d-none");
-  //console.log("immagine", immagine.value);
+  dataOraScadenza.classList.remove("border-danger");
+  tipologia.classList.remove("border-danger");
+  titolo.classList.remove("border-danger");
+  descrizione.classList.remove("border-danger");
+  posizione.classList.remove("border-danger");
+  immagine.classList.remove("border-danger");
   socket.emit("insertEvento", {
     dataOraScadenza: dataOraScadenza.value,
     tipologia: tipologia.value,
@@ -46,6 +51,15 @@ createmp.onclick = () => {
 };
 
 socket.on("insertSuccess", (response) => {
-  //console.log(response);
+  if(response.result == 'Non è stato possibile aggiungere l\'evento'){
+    dataOraScadenza.classList.add("border-danger");
+    tipologia.classList.add("border-danger");
+    titolo.classList.add("border-danger");
+    descrizione.classList.add("border-danger");
+    posizione.classList.add("border-danger");
+    immagine.classList.add("border-danger");
+  }else{
+    dataOraScadenza.value = tipologia.value = titolo.value = descrizione.value = posizione.value = immagine.value = "";
+  }
   spinner.classList.add("d-none");
 });

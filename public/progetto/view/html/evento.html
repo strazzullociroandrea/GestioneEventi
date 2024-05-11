@@ -64,32 +64,32 @@
           <p class="mt-3">immagine</p>
           <input
             class="form-control"
-            type="text"
+            type="file"
             id="immagine"
             placeholder="url immagine"
           />
-          <!--<p class="mt-3">Stato</p>
-              <select class="form-control" >
-                <option value="">prova</option>
-              </select>-->
           <p class="mt-3">Descrizione</p>
           <textarea
             placeholder=" Descrizione..."
             id="descrizione"
             class="area"
           ></textarea>
-          <button id="createmp" class="mt-4">Crea temp</button>
+          
         </div>
         <div class="col-5 text-center">
           <div class="mt-5">
             <button class="btn btn-info" id="indietro">Torna indietro</button>
           </div>
           <div class="mt-5">
-            <button class="btn btn-info">Aggiungi nuovi partecipanti</button>
+            <button class="btn btn-info" id="partecipanti">Aggiungi nuovi partecipanti</button>
+          </div>
+          <div class="mt-5">
+            <button class="btn btn-info" id="createmp" >Crea l'evento</button>
           </div>
         </div>
       </div>
     </div>
+    
     <script src="../../presenter/javascript/evento.js" type="module"></script>
   </body>
 </html>
