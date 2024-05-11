@@ -73,3 +73,6 @@ socket.on("getResult", (response) => {
 crea.onclick = () => {
   window.location.href = "./evento.html";
 };
+socket.on("invitato",(response)=>{
+  alert("Sei stato invitato ad un nuovo evento");
+})

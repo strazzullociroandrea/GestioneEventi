@@ -69,3 +69,6 @@ socket.on('resultGetInviti', (response) => {
 indietro.onclick = () =>{
     window.history.back();
 }
+socket.on("invitato",(response)=>{
+    socket.emit("getInviti", sessionStorage.getItem("email"));
+})

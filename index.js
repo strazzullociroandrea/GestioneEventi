@@ -300,6 +300,8 @@ function generateRandomString(iLen) {
           evento.email
         ) {
           await queryInsertEvent(evento);
+          //da richiamare in questo modo per notificare gli invitati
+         //invita(evento.invitati, evento 'invitato');
           io.to(socket.id).emit("insertSuccess", {
             result: "OK",
           });
