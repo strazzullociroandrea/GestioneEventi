@@ -1,3 +1,5 @@
+//import { createRequire } from "module";
+//const require = createRequire(import.meta.url);
 const express = require("express");
 const http = require("http");
 const app = express();
@@ -8,7 +10,7 @@ const conf = JSON.parse(fs.readFileSync("conf.json"));
 const db = require("./server/db.js");
 const emailer = require("./server/email.js");
 const { Server } = require("socket.io");
-
+//const { megaFunction } = require("./server/mega.js");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 //mancano i controlli sicurezza e inviti in tempo reale tramite notifica, manca la possibilità di eliminare un evento solo se si è il proprietario ed anche di contrassegnarlo come completato
@@ -105,7 +107,7 @@ function generateRandomString(iLen) {
   io.on("connection", (socket) => {
     let emailGlobale;
     socket.on("login", async (dizionario) => {
-      try{
+      try {
         const { email, password } = dizionario;
         const query = `SELECT * FROM user WHERE username=?`;
         connectionToDB.executeQuery(query, [email]).then((response) => {
@@ -143,7 +145,7 @@ function generateRandomString(iLen) {
             io.to(socket.id).emit("loginSucc", "Credenziali errate");
           }
         });
-      }catch(e){
+      } catch (e) {
         io.to(socket.id).emit("loginSucc", e);
       }
     });
@@ -162,62 +164,70 @@ function generateRandomString(iLen) {
     });
     //funzione per recuperare gli inviti - stato=> 'Da accettare'
     socket.on("getInviti", async (email) => {
-      try{
+      try {
         if (email && email !== "") {
-          const sql = "SELECT evento.titolo, invitare.idUser, invitare.idEvento FROM evento INNER JOIN invitare ON evento.id = invitare.idEvento INNER JOIN user ON user.id = invitare.idUser WHERE user.username = ? AND invitare.stato = 'Da accettare'";
+          const sql =
+            "SELECT evento.titolo, invitare.idUser, invitare.idEvento FROM evento INNER JOIN invitare ON evento.id = invitare.idEvento INNER JOIN user ON user.id = invitare.idUser WHERE user.username = ? AND invitare.stato = 'Da accettare'";
           const titoli = await connectionToDB.executeQuery(sql, [email]);
           const final = [];
-          await Promise.all(titoli.map(async (titolo) => {
-            const sqlProprietario = "SELECT user.username FROM user INNER JOIN evento ON evento.idUser = user.id";
-            const username = await connectionToDB.executeQuery(sqlProprietario, [titolo.titolo]);
-            final.push({
-              titolo: titolo.titolo,
-              proprietario: username[0].username,
-              idUser: titolo.idUser,
-              idEvento: titolo.idEvento
-            });
-          }));
+          await Promise.all(
+            titoli.map(async (titolo) => {
+              const sqlProprietario =
+                "SELECT user.username FROM user INNER JOIN evento ON evento.idUser = user.id";
+              const username = await connectionToDB.executeQuery(
+                sqlProprietario,
+                [titolo.titolo]
+              );
+              final.push({
+                titolo: titolo.titolo,
+                proprietario: username[0].username,
+                idUser: titolo.idUser,
+                idEvento: titolo.idEvento,
+              });
+            })
+          );
           io.to(socket.id).emit("resultGetInviti", { result: final });
         } else {
           io.to(socket.id).emit("resultGetInviti", { result: [] });
         }
-      }catch(e){
+      } catch (e) {
         io.to(socket.id).emit("resultGetInviti", { result: e });
       }
-      
     });
     //servizio per accettare l'invito
-    socket.on("accettaInvito", async(dizionario)=>{
-      try{
-        const {idEvento, idUser} = dizionario;
-        if(idEvento && idEvento != "" && idUser && idUser != ""){
-          const sqlUpdate = "UPDATE invitare SET stato = 'Accettato' WHERE idEvento = ? AND idUser = ?";
+    socket.on("accettaInvito", async (dizionario) => {
+      try {
+        const { idEvento, idUser } = dizionario;
+        if (idEvento && idEvento != "" && idUser && idUser != "") {
+          const sqlUpdate =
+            "UPDATE invitare SET stato = 'Accettato' WHERE idEvento = ? AND idUser = ?";
           await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
           io.to(socket.id).emit("accettaInvitoRes", true);
-        }else{
+        } else {
           io.to(socket.id).emit("accettaInvitoRes", false);
         }
-      }catch(e){
+      } catch (e) {
         io.to(socket.id).emit("accettaInvitoRes", e);
       }
-    })
+    });
     //servizio per rifiutare l'invito
-    socket.on("rifiutaInvito", async(dizionario)=>{
-      try{
-        const {idEvento, idUser} = dizionario;
-        if(idEvento && idEvento != "" && idUser && idUser != ""){
-          const sqlUpdate = "UPDATE invitare SET stato = 'Non accettato' WHERE idEvento = ? AND idUser = ?";
+    socket.on("rifiutaInvito", async (dizionario) => {
+      try {
+        const { idEvento, idUser } = dizionario;
+        if (idEvento && idEvento != "" && idUser && idUser != "") {
+          const sqlUpdate =
+            "UPDATE invitare SET stato = 'Non accettato' WHERE idEvento = ? AND idUser = ?";
           await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
           io.to(socket.id).emit("rifiutaInvitoRes", true);
-        }else{
+        } else {
           io.to(socket.id).emit("rifiutaInvitoRes", false);
         }
-      }catch(e){
+      } catch (e) {
         io.to(socket.id).emit("rifiutaInvitoRes", e);
       }
-    })
+    });
     socket.on("getAllUserEvents", async (email) => {
-      try{
+      try {
         if (email !== "") {
           queryGetAllUserEvents(email)
             .then((json) => {
@@ -228,13 +238,13 @@ function generateRandomString(iLen) {
               io.to(socket.id).emit("getResult", { result: [] });
             });
         }
-      }catch(e){
+      } catch (e) {
         io.to(socket.id).emit("getResult", { result: e });
       }
     });
     //manca la possibilità di cambiare/aggiungere immagini e gli invitati
     socket.on("updateEvento", async (dizionario) => {
-      try{
+      try {
         const {
           id,
           dataOraScadenza,
@@ -283,14 +293,13 @@ function generateRandomString(iLen) {
             result: "Id evento non settato",
           });
         }
-      }catch(e){
+      } catch (e) {
         io.to(socket.id).emit("resultUpdateEvento", { result: e });
       }
-      
     });
     //servizio per inserire un evento - controllare che ci siano persone invitate che non sono iscritte
     socket.on("insertEvento", async (evento) => {
-      try{
+      try {
         if (
           evento.dataOraScadenza !== "" &&
           evento.tipologia !== "" &&
@@ -301,7 +310,7 @@ function generateRandomString(iLen) {
         ) {
           await queryInsertEvent(evento);
           //da richiamare in questo modo per notificare gli invitati
-         //invita(evento.invitati, evento 'invitato');
+          //invita(evento.invitati, evento 'invitato');
           io.to(socket.id).emit("insertSuccess", {
             result: "OK",
           });
@@ -310,12 +319,12 @@ function generateRandomString(iLen) {
             result: "Non è stato possibile aggiungere l'evento",
           });
         }
-      }catch(e){
-        io.to(socket.id).emit("insertSuccess", {result: e});
+      } catch (e) {
+        io.to(socket.id).emit("insertSuccess", { result: e });
       }
     });
   });
-  
+
   //da trasformare in socket ed inviare la notifica ai client che quando la ricevono rifanno il render della pagina
   app.post("/deleteEvento", (req, res) => {
     const event = req.body.event;
@@ -405,9 +414,9 @@ function generateRandomString(iLen) {
                     email,
                     "Registrazione Avvenuta con successo",
                     "Ciao <strong>" +
-                    email +
-                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
-                    password
+                      email +
+                      "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                      password
                   );
 
                   res.json({ result: "ok" });
@@ -427,7 +436,7 @@ function generateRandomString(iLen) {
    * Reset della password
    */
   app.post("/reset_password", (req, res) => {
-    try{
+    try {
       const { email } = req.body;
       const query = `SELECT * FROM user WHERE username=?`;
       connectionToDB.executeQuery(query, [email]).then((response) => {
@@ -446,7 +455,7 @@ function generateRandomString(iLen) {
                   "Password reimpostata",
                   "La tua nuova password è " + new_password
                 );
-  
+
                 res.json(true);
               })
               .catch((err) => console.error(err.message));
@@ -456,34 +465,32 @@ function generateRandomString(iLen) {
           res.json("email errata");
         }
       });
-    }catch(e){
+    } catch (e) {
       //console.log(e);
     }
-    
   });
-  app.post("/changePassword",async(req, res)=>{
-    const {username, newPassword} = req.body;
-    if(username  && username != "" && newPassword && newPassword != ""){
-      bcrypt.hash(newPassword, saltRounds).then(async(hashed_password) => {
-        const sql = "UPDATE user SET password = ? WHERE username = ?"
-        await connectionToDB.executeQuery(sql,[hashed_password, username]);
-        res.json({result: true});
+  app.post("/changePassword", async (req, res) => {
+    const { username, newPassword } = req.body;
+    if (username && username != "" && newPassword && newPassword != "") {
+      bcrypt.hash(newPassword, saltRounds).then(async (hashed_password) => {
+        const sql = "UPDATE user SET password = ? WHERE username = ?";
+        await connectionToDB.executeQuery(sql, [hashed_password, username]);
+        res.json({ result: true });
       });
-      
-    }else{
-      res.json({result: false});
+    } else {
+      res.json({ result: false });
     }
-  })
-  app.post("/deleteAccount", async(req, res)=>{
-    const {username} = req.body;
-    if(username && username != ""){
-      const sql = "DELETE user  WHERE username = ?"
-      await connectionToDB.executeQuery(sql,[username]);
-      res.json({result: true});
-    }else{
-      res.json({result: false});
+  });
+  app.post("/deleteAccount", async (req, res) => {
+    const { username } = req.body;
+    if (username && username != "") {
+      const sql = "DELETE user  WHERE username = ?";
+      await connectionToDB.executeQuery(sql, [username]);
+      res.json({ result: true });
+    } else {
+      res.json({ result: false });
     }
-  })
+  });
   /**
    *Avvio del serever
    */
