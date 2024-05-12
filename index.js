@@ -126,27 +126,18 @@ function generateRandomString(iLen) {
                 if (oldAssocIndex !== -1) {
                   associazioni.splice(oldAssocIndex, 1);
                   associazioni.push({ email, socket: socket.id });
-                  io.to(socket.id).emit(
-                    "loginSucc",
-                    "Accesso effettuato con successo"
-                  );
+                  io.to(socket.id).emit("loginSucc", response[0].id);
                 } else {
                   associazioni.push({ email, socket: socket.id });
-                  io.to(socket.id).emit(
-                    "loginSucc",
-                    "Accesso effettuato con successo"
-                  );
+                  io.to(socket.id).emit("loginSucc", response[0].id);
                 }
-                io.to(socket.id).emit(
-                  "loginSucc",
-                  "Accesso effettuato con successo"
-                );
+                io.to(socket.id).emit("loginSucc", response[0].id);
               } else {
-                io.to(socket.id).emit("loginSucc", "Credenziali errate");
+                io.to(socket.id).emit("loginSucc", -1);
               }
             });
           } else {
-            io.to(socket.id).emit("loginSucc", "Credenziali errate");
+            io.to(socket.id).emit("loginSucc", -1);
           }
         });
       } catch (e) {

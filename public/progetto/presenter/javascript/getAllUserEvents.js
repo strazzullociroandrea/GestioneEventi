@@ -43,7 +43,7 @@ logout.onclick = () => {
 };
 
 socket.on("loginSucc", (response) => {
-  if (response === "Accesso effettuato con successo") {
+  if (response > 0) {
     socket.emit("getAllUserEvents", sessionStorage.getItem("email"));
   } else {
     window.location.href = "./login.html";
