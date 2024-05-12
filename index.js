@@ -1,17 +1,21 @@
-const express = require("express");
-const http = require("http");
+import { createRequire } from "module";
+import { Storage, File } from "megajs";
+import * as url from "url";
+import express from "express";
+import http from "http";
 const app = express();
-const path = require("path");
-const bodyParser = require("body-parser");
-const fs = require("fs");
+import path from "path";
+import bodyParser from "body-parser";
+import fs from "fs";
 const conf = JSON.parse(fs.readFileSync("conf.json"));
-const db = require("./server/db.js");
-const emailer = require("./server/email.js");
-const { Server } = require("socket.io");
+import db from "./server/db.js";
+import emailer from "./server/email.js";
+import { Server } from "socket.io";
 
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
 const saltRounds = 10;
 //mancano i controlli sicurezza e inviti in tempo reale tramite notifica, manca la possibilità di eliminare un evento solo se si è il proprietario ed anche di contrassegnarlo come completato
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 app.use(bodyParser.json());
 app.use(

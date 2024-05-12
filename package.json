@@ -16,9 +16,11 @@
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
+    "megajs": "^1.2.2",
     "mysql2": "^3.9.7",
     "nodemailer": "^6.9.13",
     "path": "^0.12.7",
     "socket.io": "^4.7.5"
-  }
+  },
+  "type": "module"
 }
