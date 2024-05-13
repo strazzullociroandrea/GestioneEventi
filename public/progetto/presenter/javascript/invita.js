@@ -3,7 +3,22 @@ const buttonInvita = document.getElementById("button-invita");
 
 const userId = sessionStorage.getItem("id");
 let users;
+let eventId;
 
+window.onload = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  eventId = searchParams.get("idEvento");
+
+  fetch("/getOtherUsers?userId=" + userId + "&eventId=" + eventId, {
+    method: "GET",
+  }).then((res) => {
+    res.json().then((results) => {
+      console.log(results);
+      users = results;
+      render();
+    });
+  });
+};
 console.log("idUser", userId);
 
 buttonInvita.onclick = () => {
@@ -14,15 +29,25 @@ buttonInvita.onclick = () => {
     }
   });
 
-  //In selected ho l'elenco degli id degli utenti da invitare
-
-  console.log("invita", selected);
+  //In selected ho l'elenco degli id delle checkbox utenti da invitare
+  let users = [];
+  selected.forEach((item) => {
+    id = item.split("-");
+    users.push(id[1]);
+  });
+  console.log("invita", selected, eventId);
   fetch("/invitaUtenti", {
     method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
     body: JSON.stringify({
-      userIds: selected,
+      userIds: users,
+      eventId: eventId,
     }),
   });
+  console.log("go back");
+  window.history.back();
 };
 const render = () => {
   let html = "";
@@ -38,13 +63,3 @@ const render = () => {
   });
   tableUsers.innerHTML = html;
 };
-
-fetch("/getOtherUsers?userId=" + userId, {
-  method: "GET",
-}).then((res) => {
-  res.json().then((results) => {
-    console.log(results);
-    users = results;
-    render();
-  });
-});

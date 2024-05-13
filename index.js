@@ -545,21 +545,42 @@ function generateRandomString(iLen) {
     }
   });
 
-  const queryGetOtherUsers = (userId) => {
-    const sql = `SELECT id,username FROM user WHERE id <> ?`;
+  const queryGetOtherUsers = async (userId, eventId) => {
+    const sqlInvited = `SELECT idUser FROM invitare WHERE idEvento = ?`;
+    const invited = await connectionToDB.executeQuery(sqlInvited, [eventId]);
+    console.log("invited", invited);
+
+    let invitedSQL = "(";
+    invited.forEach((inv) => {
+      invitedSQL += inv.idUser + ",";
+    });
+    invitedSQL = invitedSQL.slice(0, -1);
+    invitedSQL += ") ";
+
+    let sql = `SELECT id,username FROM user WHERE id <> ? `;
+
+    if (invited.length > 0) {
+      sql += ` AND NOT id IN ` + invitedSQL;
+    }
     return connectionToDB.executeQuery(sql, [userId]);
   };
 
   app.get("/getOtherUsers", async (req, res) => {
-    const { userId } = req.query;
-    let results = await queryGetOtherUsers(userId);
+    const { userId, eventId } = req.query;
+    const results = await queryGetOtherUsers(userId, eventId);
     console.log("userId = ", userId, results);
     res.json(results);
   });
 
   app.post("/invitaUtenti", async (req, res) => {
-    const userIds = req.body.userIds;
+    const { userIds, eventId } = req.body;
     console.log("utenti", userIds, req.body);
+    let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
+    userIds.forEach((userId) => {
+      sql += "('Da Accettare'," + eventId + "," + userId + "),";
+    });
+    sql = sql.slice(0, -1) + ";";
+    return await connectionToDB.executeQuery(sql);
   });
 
   /**
