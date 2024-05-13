@@ -133,3 +133,7 @@ conf.json
 node_modules
 .DS_Store
 ca.pem
+
+.replit
+replit.nix
+.dist
