@@ -38,6 +38,14 @@ createmp.onclick = () => {
   descrizione.classList.remove("border-danger");
   posizione.classList.remove("border-danger");
   immagine.classList.remove("border-danger");
+
+  console.log(
+    "immagine = ",
+    immagine.files[0],
+    immagine.files[0].name,
+    immagine.files[0].size,
+    immagine.files[0].mediaType
+  );
   socket.emit("insertEvento", {
     dataOraScadenza: dataOraScadenza.value,
     tipologia: tipologia.value,
@@ -46,20 +54,26 @@ createmp.onclick = () => {
     descrizione: descrizione.value,
     posizione: posizione.value,
     email: sessionStorage.getItem("email"),
-    immagine: immagine.value,
+    immagine: immagine.files[0],
   });
 };
 
 socket.on("insertSuccess", (response) => {
-  if(response.result == 'Non è stato possibile aggiungere l\'evento'){
+  if (response.result == "Non è stato possibile aggiungere l'evento") {
     dataOraScadenza.classList.add("border-danger");
     tipologia.classList.add("border-danger");
     titolo.classList.add("border-danger");
     descrizione.classList.add("border-danger");
     posizione.classList.add("border-danger");
     immagine.classList.add("border-danger");
-  }else{
-    dataOraScadenza.value = tipologia.value = titolo.value = descrizione.value = posizione.value = immagine.value = "";
+  } else {
+    dataOraScadenza.value =
+      tipologia.value =
+      titolo.value =
+      descrizione.value =
+      posizione.value =
+      immagine.value =
+        "";
   }
   spinner.classList.add("d-none");
 });

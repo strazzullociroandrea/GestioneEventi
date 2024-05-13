@@ -11,6 +11,7 @@ const conf = JSON.parse(fs.readFileSync("conf.json"));
 
 import db from "./server/db.js";
 import emailer from "./server/email.js";
+import { megaFunction } from "./server/mega.js";
 import { Server } from "socket.io";
 
 import bcrypt from "bcrypt";
@@ -295,6 +296,12 @@ function generateRandomString(iLen) {
     //servizio per inserire un evento - controllare che ci siano persone invitate che non sono iscritte
     socket.on("insertEvento", async (evento) => {
       try {
+        megaFunction
+          .uploadFileToStorage(evento.immagine.name, evento.immagine)
+          .then((ret) => {
+            console.log("return from upload", ret);
+          });
+
         if (
           evento.dataOraScadenza !== "" &&
           evento.tipologia !== "" &&
