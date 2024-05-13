@@ -23,7 +23,10 @@ const render = (result) => {
     for (let j = i; j < Math.min(i + 3, result.length); j++) {
       html += templateEvento
         .replace("%TITOLO", result[j].titolo)
-        .replace("%IMG", result[j].immagine)
+        .replace(
+          "%IMG",
+          "/getImage?link=" + encodeURIComponent(result[j].immagine)
+        )
         .replace("%SCADENZA", result[j].dataOraScadenza.replace("T", " "))
         .replace("%DESCRIZIONE", result[j].descrizione)
         .replace("%TIPOLOGIA", result[j].tipologia)

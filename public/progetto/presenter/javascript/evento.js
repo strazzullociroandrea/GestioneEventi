@@ -48,7 +48,8 @@ createmp.onclick = async () => {
     method: "POST",
     body: formData,
   });
-
+  rsp = await rsp.json();
+  console.log("rsp", rsp.link);
   socket.emit("insertEvento", {
     dataOraScadenza: dataOraScadenza.value,
     tipologia: tipologia.value,
@@ -59,7 +60,6 @@ createmp.onclick = async () => {
     email: sessionStorage.getItem("email"),
     immagine: immagine.files[0],
   });
-  rsp = await rsp.json();
   //Se è stato caricato con successo
   if (rsp.result) {
     //link dell'immagine da salvare in db

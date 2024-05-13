@@ -8,10 +8,9 @@ import path from "path";
 import bodyParser from "body-parser";
 import fs from "fs";
 const conf = JSON.parse(fs.readFileSync("conf.json"));
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import { megaFunction } from "./server/mega.js";
-import multer from 'multer';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import multer from "multer";
 import db from "./server/db.js";
 import emailer from "./server/email.js";
 import { megaFunction } from "./server/mega.js";
@@ -29,13 +28,12 @@ const saltRounds = 10;
 //mancano i controlli sicurezza e inviti in tempo reale tramite notifica, manca la possibilità di eliminare un evento solo se si è il proprietario ed anche di contrassegnarlo come completato
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-
 app.use(
   bodyParser.urlencoded({
     extended: true,
   })
 );
-app.use(bodyParser.json({limit: '10gb'}));
+app.use(bodyParser.json({ limit: "10gb" }));
 
 app.use("/", express.static(path.join(__dirname, "public")));
 const server = http.createServer(app);
@@ -307,12 +305,6 @@ function generateRandomString(iLen) {
     //servizio per inserire un evento - controllare che ci siano persone invitate che non sono iscritte
     socket.on("insertEvento", async (evento) => {
       try {
-        megaFunction
-          .uploadFileToStorage(evento.immagine.name, evento.immagine)
-          .then((ret) => {
-            console.log("return from upload", ret);
-          });
-
         if (
           evento.dataOraScadenza !== "" &&
           evento.tipologia !== "" &&
@@ -427,9 +419,9 @@ function generateRandomString(iLen) {
                     email,
                     "Registrazione Avvenuta con successo",
                     "Ciao <strong>" +
-                    email +
-                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
-                    password
+                      email +
+                      "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                      password
                   );
 
                   res.json({ result: "ok" });
@@ -445,26 +437,53 @@ function generateRandomString(iLen) {
     }
   });
 
-  app.post("/dammiUrl", upload.single('file'), async (req, res) => {
+  app.post("/dammiUrl", upload.single("file"), async (req, res) => {
     try {
       const file = req.file;
       if (file) {
         const fileName = path.basename(file.originalname);
-        const link = await megaFunction.uploadFileToStorage(fileName, file.buffer);
-        console.log('File caricato con successo. Path: ', fileName);
+        const link = await megaFunction.uploadFileToStorage(
+          fileName,
+          file.buffer
+        );
+        console.log("File caricato con successo. Path: ", fileName);
         res.json({ result: true, link });
       } else {
         res.json({
-          result: false
+          result: false,
         });
       }
     } catch (e) {
       //console.log(e);
       res.json({
-        result: false
+        result: false,
       });
     }
-  })
+  });
+
+  app.get("/getImage", async (req, res) => {
+    try {
+      console.log("ci sono ----");
+      const link = req.query.link;
+      console.log("link", link);
+      if (link) {
+        const { stream, fileName } = await megaFunction.downloadFileFromLink(
+          link
+        );
+        console.log("File scaricato con successo. Path: ", fileName, stream);
+        res.download(stream);
+      } else {
+        res.json({
+          result: false,
+        });
+      }
+    } catch (e) {
+      //console.log(e);
+      res.json({
+        result: false,
+      });
+    }
+  });
 
   /**
    * Reset della password
