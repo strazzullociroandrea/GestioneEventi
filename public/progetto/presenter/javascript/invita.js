@@ -1,6 +1,7 @@
 const tableUsers = document.getElementById("table-users");
 const buttonInvita = document.getElementById("button-invita");
 const indietro = document.getElementById("indietro");
+const spinner = document.getElementById("spinner");
 
 const userId = sessionStorage.getItem("id");
 let users;
@@ -17,12 +18,14 @@ window.onload = () => {
       console.log(results);
       users = results;
       render();
+      spinner.classList.add("d-none");
     });
   });
 };
 console.log("idUser", userId);
 
 buttonInvita.onclick = () => {
+  spinner.classList.remove("d-none");
   let selected = [];
   document.querySelectorAll("input[type=checkbox]").forEach((check) => {
     if (check.checked) {
@@ -48,8 +51,10 @@ buttonInvita.onclick = () => {
       }),
     });
     console.log("go back");
+    
     window.history.back();
   }
+  spinner.classList.remove("d-none");
 };
 const render = () => {
   let html = "";

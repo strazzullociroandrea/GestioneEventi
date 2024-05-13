@@ -95,7 +95,7 @@ function generateRandomString(iLen) {
 
   const queryInsertEvent = (dict) => {
     //non aggiunge gli invitati..
-    const sql = `INSERT INTO evento (dataOraScadenza, tipologia, titolo, descrizione, immagine, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.titolo}', '${dict.descrizione}', '${dict.immagine}', '${dict.posizione}', (SELECT id FROM user WHERE username = '${dict.email}'))`;
+    const sql = `INSERT INTO evento (dataOraScadenza, tipologia, titolo, descrizione, immagine, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.titolo}', '${connectionToDB.escape(dict.descrizione)}', '${dict.immagine}', '${dict.posizione}', (SELECT id FROM user WHERE username = '${dict.email}'))`;
     return connectionToDB.executeQuery(sql);
   };
 
@@ -440,7 +440,21 @@ function generateRandomString(iLen) {
       //console.log(e);
     }
   });
-
+  app.post('/download', async (req, res) => {
+      const link = req.body.mega;
+      try {
+          const file = File.fromURL(link); // Ottieni il file da Mega utilizzando l'URL fornito
+          await file.loadAttributes(); // Carica gli attributi del file
+          const buffer = await file.downloadBuffer(); // Scarica il file come buffer
+          
+          res.setHeader('Content-Type', file.type); // Imposta il tipo di contenuto sulla base del tipo di file
+          res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`); // Imposta l'header per il download del file
+          res.send(buffer); // Invia il buffer come risposta al client
+      } catch (error) {
+          console.error(error);
+          res.status(500).send('Errore del server');
+      }
+  });
   app.post("/dammiUrl", upload.single("file"), async (req, res) => {
     try {
       const file = req.file;
