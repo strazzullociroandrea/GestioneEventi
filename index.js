@@ -313,18 +313,22 @@ function generateRandomString(iLen) {
           evento.posizione !== "" &&
           evento.email
         ) {
+          console.log("MArameo2);")
           await queryInsertEvent(evento);
+          console.log("OK");
           //da richiamare in questo modo per notificare gli invitati
           //invita(evento.invitati, evento 'invitato');
           io.to(socket.id).emit("insertSuccess", {
             result: "OK",
           });
         } else {
+          console.log("NO");
           io.to(socket.id).emit("insertSuccess", {
             result: "Non è stato possibile aggiungere l'evento",
           });
         }
       } catch (e) {
+        console.log(e);
         io.to(socket.id).emit("insertSuccess", { result: e });
       }
     });
@@ -532,6 +536,21 @@ function generateRandomString(iLen) {
       });
     } else {
       res.json({ result: false });
+    }
+  });
+  app.post("/getEvento", async (req,res) => {
+    //bisogna conrtollare che chi lo vuole vedere sia un invitato o il proprietario altrimenti restituisce un arrya vuoto
+    try {
+      const idEvento = req.body.idEvento;
+      const email = req.body.email;
+      //bisogna prendere anche gli inviti solo se sono accettati
+      const rsp1 = await connectionToDB.executeQuery(
+        "SELECT * FROM evento WHERE id=?",
+        [idEvento]
+      );
+      res.json({ result: rsp1 });
+    } catch (e) {
+      res.json({ result: e });
     }
   });
   app.post("/deleteAccount", async (req, res) => {

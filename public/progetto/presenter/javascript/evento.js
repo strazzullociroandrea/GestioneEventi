@@ -50,16 +50,7 @@ createmp.onclick = async () => {
   });
   rsp = await rsp.json();
   console.log("rsp", rsp.link);
-  socket.emit("insertEvento", {
-    dataOraScadenza: dataOraScadenza.value,
-    tipologia: tipologia.value,
-    stato: "TEST",
-    titolo: titolo.value,
-    descrizione: descrizione.value,
-    posizione: posizione.value,
-    email: sessionStorage.getItem("email"),
-    immagine: immagine.files[0],
-  });
+ 
   //Se è stato caricato con successo
   if (rsp.result) {
     //link dell'immagine da salvare in db

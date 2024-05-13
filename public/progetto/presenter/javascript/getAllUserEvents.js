@@ -40,7 +40,7 @@ const render = (result) => {
   document.querySelectorAll(".viewEvento").forEach((button) => {
     button.onclick = () => {
       //console.log(button.id);
-      //window.location.href = "./evento.html?idEvento="+button.id
+      window.location.href = "./dettaglioEvento.html?idEvento="+button.id
     };
   });
 
