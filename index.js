@@ -470,7 +470,7 @@ function generateRandomString(iLen) {
         const { stream, fileName } = await megaFunction.downloadFileFromLink(
           link
         );
-        console.log("File scaricato con successo. Path: ", fileName, stream);
+        console.log("File scaricato con successo. Path: ", fileName);
         res.download(stream);
       } else {
         res.json({
@@ -544,6 +544,24 @@ function generateRandomString(iLen) {
       res.json({ result: false });
     }
   });
+
+  const queryGetOtherUsers = (userId) => {
+    const sql = `SELECT id,username FROM user WHERE id <> ?`;
+    return connectionToDB.executeQuery(sql, [userId]);
+  };
+
+  app.get("/getOtherUsers", async (req, res) => {
+    const { userId } = req.query;
+    let results = await queryGetOtherUsers(userId);
+    console.log("userId = ", userId, results);
+    res.json(results);
+  });
+
+  app.post("/invitaUtenti", async (req, res) => {
+    const userIds = req.body.userIds;
+    console.log("utenti", userIds, req.body);
+  });
+
   /**
    *Avvio del serever
    */
