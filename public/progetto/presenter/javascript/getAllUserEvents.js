@@ -10,50 +10,14 @@ const crea = document.getElementById("crea");
 const inviti = document.getElementById("inviti");
 const profilo = document.getElementById("profilo");
 const spinner = document.getElementById("spinner");
+
 const deleteEvent = (id) => {
   console.log("deleting", id);
 };
-profilo.onclick = () => {
-  spinner.classList.remove("d-none");
-  window.location.href = "./profilo.html";
-};
 
-window.onload = () => {
-  const user = sessionStorage.getItem("email");
-  const password = sessionStorage.getItem("password");
-  if (user && user != "" && password && password != "") {
-    socket.emit("login", {
-      email: user,
-      password: password,
-    });
-  } else {
-    window.location.href = "./login.html";
-  }
-};
-
-inviti.onclick = () => {
-  spinner.classList.remove("d-none");
-  window.location.href = "./inviti.html";
-};
-
-logout.onclick = () => {
-  spinner.classList.remove("d-none");
-  sessionStorage.clear();
-  window.location.href = "./login.html";
-};
-
-socket.on("loginSucc", (response) => {
-  if (response > 0) {
-    socket.emit("getAllUserEvents", sessionStorage.getItem("email"));
-  } else {
-    window.location.href = "./login.html";
-  }
-});
-
-socket.on("getResult", (response) => {
+const render = (result) => {
   let html = "";
-  const { result } = response;
-  console.log(result);
+
   for (let i = 0; i < result.length; i += 3) {
     html += '<div class="row justify-content-center mt-4">';
     for (let j = i; j < Math.min(i + 3, result.length); j++) {
@@ -93,6 +57,7 @@ socket.on("getResult", (response) => {
           },
         }),
       }).then((res) => {
+        location.reload();
         console.log(res);
       });
       //window.location.href = "./evento.html?idEvento="+button.id
@@ -100,6 +65,48 @@ socket.on("getResult", (response) => {
   });
 
   spinner.classList.add("d-none");
+};
+profilo.onclick = () => {
+  spinner.classList.remove("d-none");
+  window.location.href = "./profilo.html";
+};
+
+window.onload = () => {
+  const user = sessionStorage.getItem("email");
+  const password = sessionStorage.getItem("password");
+  if (user && user != "" && password && password != "") {
+    socket.emit("login", {
+      email: user,
+      password: password,
+    });
+  } else {
+    window.location.href = "./login.html";
+  }
+};
+
+inviti.onclick = () => {
+  spinner.classList.remove("d-none");
+  window.location.href = "./inviti.html";
+};
+
+logout.onclick = () => {
+  spinner.classList.remove("d-none");
+  sessionStorage.clear();
+  window.location.href = "./login.html";
+};
+
+socket.on("loginSucc", (response) => {
+  if (response > 0) {
+    socket.emit("getAllUserEvents", sessionStorage.getItem("email"));
+  } else {
+    window.location.href = "./login.html";
+  }
+});
+
+socket.on("getResult", (response) => {
+  console.log("response", response);
+  const { result } = response;
+  render(result);
 });
 
 crea.onclick = () => {
