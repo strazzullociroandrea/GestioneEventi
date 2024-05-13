@@ -37,10 +37,10 @@ export const megaFunction = {
   },
   downloadFileFromLink: async (link) => {
     try {
-      const file = await File.fromURL(link, { downloadWorkers: 4 }); // Utilizza il metodo fromURL della classe File
-      await file.loadAttributes(); // Assicurati che il file sia completamente caricato
-      const stream = file.download(); // Scarica il file come un flusso di dati
-      const fileName = file.name; // Recupera il nome del file
+      const file = await File.fromURL(link, { downloadWorkers: 4 }); 
+      await file.loadAttributes();
+      const stream = file.download(); 
+      const fileName = file.name;
       return { stream, fileName };
     } catch (error) {
       console.error(error);

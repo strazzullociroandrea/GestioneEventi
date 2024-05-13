@@ -8,24 +8,35 @@ import path from "path";
 import bodyParser from "body-parser";
 import fs from "fs";
 const conf = JSON.parse(fs.readFileSync("conf.json"));
-
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { megaFunction } from "./server/mega.js";
+import multer from 'multer';
 import db from "./server/db.js";
 import emailer from "./server/email.js";
 import { megaFunction } from "./server/mega.js";
 import { Server } from "socket.io";
 
 import bcrypt from "bcrypt";
-
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: Infinity, // Accetta file di qualsiasi dimensione
+  },
+  allowUploadBuffering: true, // Abilita il buffering del file
+});
 const saltRounds = 10;
 //mancano i controlli sicurezza e inviti in tempo reale tramite notifica, manca la possibilità di eliminare un evento solo se si è il proprietario ed anche di contrassegnarlo come completato
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-app.use(bodyParser.json());
+
 app.use(
   bodyParser.urlencoded({
     extended: true,
   })
 );
+app.use(bodyParser.json({limit: '10gb'}));
+
 app.use("/", express.static(path.join(__dirname, "public")));
 const server = http.createServer(app);
 const io = new Server(server);
@@ -416,9 +427,9 @@ function generateRandomString(iLen) {
                     email,
                     "Registrazione Avvenuta con successo",
                     "Ciao <strong>" +
-                      email +
-                      "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
-                      password
+                    email +
+                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                    password
                   );
 
                   res.json({ result: "ok" });
@@ -433,6 +444,27 @@ function generateRandomString(iLen) {
       //console.log(e);
     }
   });
+
+  app.post("/dammiUrl", upload.single('file'), async (req, res) => {
+    try {
+      const file = req.file;
+      if (file) {
+        const fileName = path.basename(file.originalname);
+        const link = await megaFunction.uploadFileToStorage(fileName, file.buffer);
+        console.log('File caricato con successo. Path: ', fileName);
+        res.json({ result: true, link });
+      } else {
+        res.json({
+          result: false
+        });
+      }
+    } catch (e) {
+      //console.log(e);
+      res.json({
+        result: false
+      });
+    }
+  })
 
   /**
    * Reset della password
