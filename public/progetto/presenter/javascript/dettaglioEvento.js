@@ -36,10 +36,22 @@ socket.on("loginSucc", async(response) => {
                 rsp = await rsp.json();
                 rsp = rsp.result;
                 if(rsp){
+                    console.log(rsp);
                     evento.innerHTML = "<h1 class='m-4'>Titolo: "+rsp[0].titolo+"</h1>";
                     evento.innerHTML += "<span class='m-4'>Descrizione: "+rsp[0].descrizione+"</span>";
                     evento.innerHTML += "<p></p><span class='m-4'>Posizione: "+rsp[0].posizione+"</span>";
                     evento.innerHTML += "<p></p><span class='m-4'>Tipologia: "+rsp[0].tipologia+"</span>";
+                    //visualizzo gli invitati
+                    let string = "";
+                    rsp[0].invitati.forEach(invitato => {
+                        if(invitato.username == sessionStorage.getItem("email")){
+                            string += "TU";
+                        }else{
+                            string += invitato.username.substring(0,20);
+                        }
+                    })
+                    string = string.substring(0,50) + " . . .";
+                    evento.innerHTML += "<p></p><span class='m-4'>Invitati: "+string+"</span>";
                     let rspImg = await fetch("/download", {
                         method: 'POST',
                         headers: {

@@ -94,9 +94,19 @@ function generateRandomString(iLen) {
   const connectionToDB = db(conf, fs);
 
   const queryInsertEvent = (dict) => {
-    //non aggiunge gli invitati..
-    const sql = `INSERT INTO evento (dataOraScadenza, tipologia, titolo, descrizione, immagine, posizione, idUser) VALUES ('${dict.dataOraScadenza}', '${dict.tipologia}', '${dict.titolo}', '${connectionToDB.escape(dict.descrizione)}', '${dict.immagine}', '${dict.posizione}', (SELECT id FROM user WHERE username = '${dict.email}'))`;
-    return connectionToDB.executeQuery(sql);
+    const sql = `INSERT INTO evento 
+    (dataOraScadenza, tipologia, titolo, descrizione, immagine, posizione, idUser) 
+    VALUES (?, ?, ?, ?, ?, ?, (SELECT id FROM user WHERE username = ?))`;
+    const values = [
+      dict.dataOraScadenza,
+      dict.tipologia,
+      dict.titolo,
+      dict.descrizione,
+      dict.immagine,
+      dict.posizione,
+      dict.email
+    ];
+    return connectionToDB.executeQuery(sql, values);
   };
 
   const queryGetAllUserEvents = (email) => {
@@ -239,10 +249,10 @@ function generateRandomString(iLen) {
         if (email !== "") {
           queryGetAllUserEvents(email)
             .then((json) => {
-              queryEventiInvitati(email).then(json2=>{
-                io.to(socket.id).emit("getResult", { result: [...json, ...json2 ]});
+              queryEventiInvitati(email).then(json2 => {
+                io.to(socket.id).emit("getResult", { result: [...json, ...json2] });
               })
-              
+
             })
             .catch((error) => {
               //console.log(error);
@@ -429,9 +439,9 @@ function generateRandomString(iLen) {
                     email,
                     "Registrazione Avvenuta con successo",
                     "Ciao <strong>" +
-                      email +
-                      "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
-                      password
+                    email +
+                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                    password
                   );
 
                   res.json({ result: "ok" });
@@ -447,19 +457,19 @@ function generateRandomString(iLen) {
     }
   });
   app.post('/download', async (req, res) => {
-      const link = req.body.mega;
-      try {
-          const file = File.fromURL(link); // Ottieni il file da Mega utilizzando l'URL fornito
-          await file.loadAttributes(); // Carica gli attributi del file
-          const buffer = await file.downloadBuffer(); // Scarica il file come buffer
-          
-          res.setHeader('Content-Type', file.type); // Imposta il tipo di contenuto sulla base del tipo di file
-          res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`); // Imposta l'header per il download del file
-          res.send(buffer); // Invia il buffer come risposta al client
-      } catch (error) {
-          console.error(error);
-          res.status(500).send('Errore del server');
-      }
+    const link = req.body.mega;
+    try {
+      const file = File.fromURL(link); // Ottieni il file da Mega utilizzando l'URL fornito
+      await file.loadAttributes(); // Carica gli attributi del file
+      const buffer = await file.downloadBuffer(); // Scarica il file come buffer
+
+      res.setHeader('Content-Type', file.type); // Imposta il tipo di contenuto sulla base del tipo di file
+      res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`); // Imposta l'header per il download del file
+      res.send(buffer); // Invia il buffer come risposta al client
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Errore del server');
+    }
   });
   app.post("/dammiUrl", upload.single("file"), async (req, res) => {
     try {
@@ -558,7 +568,7 @@ function generateRandomString(iLen) {
       res.json({ result: false });
     }
   });
-  app.post("/getEvento", async (req,res) => {
+  app.post("/getEvento", async (req, res) => {
     //bisogna conrtollare che chi lo vuole vedere sia un invitato o il proprietario altrimenti restituisce un arrya vuoto
     try {
       const idEvento = req.body.idEvento;
@@ -568,6 +578,10 @@ function generateRandomString(iLen) {
         "SELECT * FROM evento WHERE id=?",
         [idEvento]
       );
+      //di questo evento prendo gli invitati
+      const invitatiSql = `SELECT user.username FROM user INNER JOIN invitare ON user.id = invitare.idUser WHERE invitare.idEvento = ?`;
+      const rsp2 = await connectionToDB.executeQuery(invitatiSql, [idEvento]);
+      rsp1[0]['invitati'] = rsp2;
       res.json({ result: rsp1 });
     } catch (e) {
       res.json({ result: e });
