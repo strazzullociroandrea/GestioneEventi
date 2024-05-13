@@ -137,4 +137,4 @@ ca.pem
 .replit
 replit.nix
 .dist
-mega.json
+assets/mega.json
