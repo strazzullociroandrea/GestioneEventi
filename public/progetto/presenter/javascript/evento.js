@@ -30,24 +30,41 @@ socket.on("loginSucc", (response) => {
   spinner.classList.add("d-none");
 });
 
-createmp.onclick = () => {
+createmp.onclick = async() => {
   spinner.classList.remove("d-none");
-  dataOraScadenza.classList.remove("border-danger");
-  tipologia.classList.remove("border-danger");
-  titolo.classList.remove("border-danger");
-  descrizione.classList.remove("border-danger");
-  posizione.classList.remove("border-danger");
-  immagine.classList.remove("border-danger");
-  socket.emit("insertEvento", {
-    dataOraScadenza: dataOraScadenza.value,
-    tipologia: tipologia.value,
-    stato: "TEST",
-    titolo: titolo.value,
-    descrizione: descrizione.value,
-    posizione: posizione.value,
-    email: sessionStorage.getItem("email"),
-    immagine: immagine.value,
+  const file = immagine.files[0];
+  console.log(file);
+  const formData = new FormData();
+  formData.append('file', file);
+  console.log(formData);
+  let rsp = await fetch("/dammiUrl",{
+    method: "POST",
+    body: formData
   });
+  rsp = await rsp.json();
+  //Se è stato caricato con successo
+  if(rsp.result){
+    //link dell'immagine da salvare in db 
+    const linkImg = rsp.link;
+    dataOraScadenza.classList.remove("border-danger");
+    tipologia.classList.remove("border-danger");
+    titolo.classList.remove("border-danger");
+    descrizione.classList.remove("border-danger");
+    posizione.classList.remove("border-danger");
+    immagine.classList.remove("border-danger");
+    socket.emit("insertEvento", {
+      dataOraScadenza: dataOraScadenza.value,
+      tipologia: tipologia.value,
+      stato: "TEST",
+      titolo: titolo.value,
+      descrizione: descrizione.value,
+      posizione: posizione.value,
+      email: sessionStorage.getItem("email"),
+      immagine: linkImg
+    });
+  }else{
+    console.log("Caricamento non avvenuto");
+  }
 };
 
 socket.on("insertSuccess", (response) => {

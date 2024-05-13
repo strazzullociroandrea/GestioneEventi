@@ -9,13 +9,13 @@ const require = createRequire(import.meta.url);
 
 // Leggi il file di configurazione
 const conf = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../assets/mega.json"), "utf8")
+  fs.readFileSync(path.join(__dirname, "../conf.json"), "utf8")
 );
 
 // Crea la connessione allo storage una sola volta
 const storage = new Storage({
-  email: conf.email,
-  password: conf.password,
+  email: conf.mega,
+  password: conf.mega,
 }).ready;
 let folder;
 const root = await storage;
@@ -37,10 +37,10 @@ export const megaFunction = {
   },
   downloadFileFromLink: async (link) => {
     try {
-      const file = await File.fromURL(link, { downloadWorkers: 4 }); // Utilizza il metodo fromURL della classe File
-      await file.loadAttributes(); // Assicurati che il file sia completamente caricato
-      const stream = file.download(); // Scarica il file come un flusso di dati
-      const fileName = file.name; // Recupera il nome del file
+      const file = await File.fromURL(link, { downloadWorkers: 4 }); 
+      await file.loadAttributes();
+      const stream = file.download(); 
+      const fileName = file.name;
       return { stream, fileName };
     } catch (error) {
       console.error(error);
