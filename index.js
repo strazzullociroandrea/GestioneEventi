@@ -103,7 +103,10 @@ function generateRandomString(iLen) {
     const sql = `SELECT evento.* FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
     return connectionToDB.executeQuery(sql);
   };
-
+  const queryEventiInvitati = (email) => {
+    const sql = `SELECT evento.* FROM evento INNER JOIN invitare ON evento.id = invitare.idEvento INNER JOIN user ON user.id = invitare.idUser WHERE invitare.stato = 'accettato' AND user.username = '${email}' `;
+    return connectionToDB.executeQuery(sql);
+  };
   const queryDeleteEvento = (dict) => {
     const sql = `DELETE FROM evento WHERE id = ${dict.idEvento}`;
     return connectionToDB.executeQuery(sql);
@@ -236,7 +239,10 @@ function generateRandomString(iLen) {
         if (email !== "") {
           queryGetAllUserEvents(email)
             .then((json) => {
-              io.to(socket.id).emit("getResult", { result: json });
+              queryEventiInvitati(email).then(json2=>{
+                io.to(socket.id).emit("getResult", { result: [...json, ...json2 ]});
+              })
+              
             })
             .catch((error) => {
               //console.log(error);
