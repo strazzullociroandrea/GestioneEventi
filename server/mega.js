@@ -9,13 +9,13 @@ const require = createRequire(import.meta.url);
 
 // Leggi il file di configurazione
 const conf = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../conf.json"), "utf8")
+  fs.readFileSync(path.join(__dirname, "../assets/mega.json"), "utf8")
 );
 
 // Crea la connessione allo storage una sola volta
 const storage = new Storage({
-  email: conf.mega,
-  password: conf.mega,
+  email: conf.email,
+  password: conf.password,
 }).ready;
 let folder;
 const root = await storage;
