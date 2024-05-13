@@ -15,6 +15,11 @@
       crossorigin="anonymous"
     ></script>
     <title>Invita a evento</title>
+    <style>
+      .spazio {
+        margin-top: 150px;
+      }
+    </style>
   </head>
   <body>
     <div
@@ -32,13 +37,18 @@
       class="row justify-content-start bg bg-light border-bottom shadow"
       id="navbar"
     >
-      <div class="col-8 mb-2 mt-2">
-        <h1>Invito</h1>
+    <div class="row justify-content-center fixed-top bg bg-light border-bottom shadow" id="navbar">
+      <div class="col-8 mb-4 mt-2">
+        <h1>Invita</h1>
+      </div>
+      <div class="col-2 d-flex align-items-center mb-4 mt-2">
+        <button class="btn btn-info" id="indietro">Indietro</button>
       </div>
     </div>
-    <div class="container container-fluid mt-5">
+    </div>
+    <div class="container container-fluid  spazio">
       <!-- INIZIO CONTENUTO-->
-      <div class="row mt-3">
+      <div class="row mt-5 ">
         <h3 class="">Invita gli utenti al seguente evento</h3>
         <h4><div id="titolo">titolo evento</div></h4>
         <h5>

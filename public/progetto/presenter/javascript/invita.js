@@ -1,5 +1,6 @@
 const tableUsers = document.getElementById("table-users");
 const buttonInvita = document.getElementById("button-invita");
+const indietro = document.getElementById("indietro");
 
 const userId = sessionStorage.getItem("id");
 let users;
@@ -35,19 +36,20 @@ buttonInvita.onclick = () => {
     id = item.split("-");
     users.push(id[1]);
   });
-  console.log("invita", selected, eventId);
-  fetch("/invitaUtenti", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      userIds: users,
-      eventId: eventId,
-    }),
-  });
-  console.log("go back");
-  window.history.back();
+  if(users.length > 0){
+    fetch("/invitaUtenti", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        userIds: users,
+        eventId: eventId,
+      }),
+    });
+    console.log("go back");
+    window.history.back();
+  }
 };
 const render = () => {
   let html = "";
@@ -63,3 +65,8 @@ const render = () => {
   });
   tableUsers.innerHTML = html;
 };
+
+indietro.onclick = () =>{
+  //spinner.classList.remove("d-none");
+   window.history.back();
+}
