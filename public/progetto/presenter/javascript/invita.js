@@ -22,6 +22,7 @@ window.onload = () => {
     });
   });
 };
+
 console.log("idUser", userId);
 
 buttonInvita.onclick = () => {
@@ -39,7 +40,7 @@ buttonInvita.onclick = () => {
     id = item.split("-");
     users.push(id[1]);
   });
-  if(users.length > 0){
+  if (users.length > 0) {
     fetch("/invitaUtenti", {
       method: "POST",
       headers: {
@@ -51,10 +52,19 @@ buttonInvita.onclick = () => {
       }),
     });
     console.log("go back");
-    
+
     window.history.back();
   }
   spinner.classList.remove("d-none");
+  //In selected ho l'elenco degli id degli utenti da invitare
+
+  console.log("invita", selected);
+  fetch("/invitaUtenti", {
+    method: "POST",
+    body: JSON.stringify({
+      userIds: selected,
+    }),
+  });
 };
 const render = () => {
   let html = "";
@@ -71,7 +81,32 @@ const render = () => {
   tableUsers.innerHTML = html;
 };
 
-indietro.onclick = () =>{
+fetch("/getOtherUsers?userId=" + userId, {
+  method: "GET",
+}).then((res) => {
+  res.json().then((results) => {
+    console.log(results);
+    users = results;
+    render();
+  });
+});
+
+fetch("/getOtherUsers?userId=" + userId, {
+  method: "GET",
+}).then((res) => {
+  res.json().then((results) => {
+    console.log(results);
+    users = results;
+    render();
+  });
+});
+
+indietro.onclick = () => {
   //spinner.classList.remove("d-none");
-   window.history.back();
-}
+  window.history.back();
+};
+
+indietro.onclick = () => {
+  //spinner.classList.remove("d-none");
+  window.history.back();
+};
