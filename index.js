@@ -594,7 +594,7 @@ function generateRandomString(iLen) {
   app.post("/deleteAccount", async (req, res) => {
     const { username } = req.body;
     if (username && username != "") {
-      const sql = "DELETE user  WHERE username = ?";
+      const sql = "DELETE FROM user WHERE username = ?";
       await connectionToDB.executeQuery(sql, [username]);
       res.json({ result: true });
     } else {
