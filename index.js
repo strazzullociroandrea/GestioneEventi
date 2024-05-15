@@ -104,7 +104,7 @@ function generateRandomString(iLen) {
       dict.descrizione,
       dict.immagine,
       dict.posizione,
-      dict.email
+      dict.email,
     ];
     return connectionToDB.executeQuery(sql, values);
   };
@@ -249,10 +249,11 @@ function generateRandomString(iLen) {
         if (email !== "") {
           queryGetAllUserEvents(email)
             .then((json) => {
-              queryEventiInvitati(email).then(json2 => {
-                io.to(socket.id).emit("getResult", { result: [...json, ...json2] });
-              })
-
+              queryEventiInvitati(email).then((json2) => {
+                io.to(socket.id).emit("getResult", {
+                  result: [...json, ...json2],
+                });
+              });
             })
             .catch((error) => {
               //console.log(error);
@@ -329,7 +330,7 @@ function generateRandomString(iLen) {
           evento.posizione !== "" &&
           evento.email
         ) {
-          console.log("MArameo2);")
+          console.log("MArameo2);");
           await queryInsertEvent(evento);
           console.log("OK");
           //da richiamare in questo modo per notificare gli invitati
@@ -439,9 +440,9 @@ function generateRandomString(iLen) {
                     email,
                     "Registrazione Avvenuta con successo",
                     "Ciao <strong>" +
-                    email +
-                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
-                    password
+                      email +
+                      "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                      password
                   );
 
                   res.json({ result: "ok" });
@@ -456,19 +457,22 @@ function generateRandomString(iLen) {
       //console.log(e);
     }
   });
-  app.post('/download', async (req, res) => {
+  app.post("/download", async (req, res) => {
     const link = req.body.mega;
     try {
       const file = File.fromURL(link); // Ottieni il file da Mega utilizzando l'URL fornito
       await file.loadAttributes(); // Carica gli attributi del file
       const buffer = await file.downloadBuffer(); // Scarica il file come buffer
 
-      res.setHeader('Content-Type', file.type); // Imposta il tipo di contenuto sulla base del tipo di file
-      res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`); // Imposta l'header per il download del file
+      res.setHeader("Content-Type", file.type); // Imposta il tipo di contenuto sulla base del tipo di file
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${file.name}"`
+      ); // Imposta l'header per il download del file
       res.send(buffer); // Invia il buffer come risposta al client
     } catch (error) {
       console.error(error);
-      res.status(500).send('Errore del server');
+      res.status(500).send("Errore del server");
     }
   });
   app.post("/dammiUrl", upload.single("file"), async (req, res) => {
@@ -581,7 +585,7 @@ function generateRandomString(iLen) {
       //di questo evento prendo gli invitati
       const invitatiSql = `SELECT user.username FROM user INNER JOIN invitare ON user.id = invitare.idUser WHERE invitare.idEvento = ?`;
       const rsp2 = await connectionToDB.executeQuery(invitatiSql, [idEvento]);
-      rsp1[0]['invitati'] = rsp2;
+      rsp1[0]["invitati"] = rsp2;
       res.json({ result: rsp1 });
     } catch (e) {
       res.json({ result: e });
@@ -619,6 +623,6 @@ function generateRandomString(iLen) {
    *Avvio del serever
    */
   server.listen(conf.port, () => {
-    //console.log("---> server running on port " + conf.port);
+    console.log("---> server running on port " + conf.port);
   });
 })();
