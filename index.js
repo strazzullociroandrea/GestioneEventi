@@ -565,6 +565,15 @@ function generateRandomString(iLen) {
       bcrypt.hash(newPassword, saltRounds).then(async (hashed_password) => {
         const sql = "UPDATE user SET password = ? WHERE username = ?";
         await connectionToDB.executeQuery(sql, [hashed_password, username]);
+        emailer.send(
+          conf,
+          username,
+          "Cambio passoword avvenuta con successo",
+          "Ciao <strong>" +
+          username +
+            "</strong>. <br>La tua password è stata modificata con successo.<br>La tua nuova password è:" +
+            newPassword
+        );
         res.json({ result: true });
       });
     } else {
@@ -595,6 +604,13 @@ function generateRandomString(iLen) {
     if (username && username != "") {
       const sql = "DELETE FROM user WHERE username = ?";
       await connectionToDB.executeQuery(sql, [username]);
+      emailer.send(
+        conf,
+        username,
+        "Eliminazione account avvenuta con successo",
+        "Ciao <strong>" +
+          username +
+          "</strong>. <br>Il tuo account è stato eliminato con successo." );
       res.json({ result: true });
     } else {
       res.json({ result: false });
