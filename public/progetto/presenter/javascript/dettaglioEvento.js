@@ -5,6 +5,7 @@ const indietro = document.getElementById("indietro");
 const evento = document.getElementById("evento");
 const immagine =  document.getElementById("immagine");
 const spinner = document.getElementById("spinner");
+const dettagli =  document.getElementById("dettagli");
 
 window.onload = async () => {
     const user = sessionStorage.getItem("email");
@@ -37,10 +38,10 @@ socket.on("loginSucc", async(response) => {
                 rsp = rsp.result;
                 if(rsp){
                     console.log(rsp);
-                    evento.innerHTML = "<h1 class='m-4'>Titolo: "+rsp[0].titolo+"</h1>";
-                    evento.innerHTML += "<span class='m-4'>Descrizione: "+rsp[0].descrizione+"</span>";
-                    evento.innerHTML += "<p></p><span class='m-4'>Posizione: "+rsp[0].posizione+"</span>";
-                    evento.innerHTML += "<p></p><span class='m-4'>Tipologia: "+rsp[0].tipologia+"</span>";
+                    evento.innerHTML = "<h1 class='m-md-4'>Titolo: "+rsp[0].titolo+"</h1>";
+                    evento.innerHTML += "<span class='m-md-4'>Descrizione: "+rsp[0].descrizione+"</span>";
+                    evento.innerHTML += "<p></p><span class='m-md-4'>Posizione: "+rsp[0].posizione+"</span>";
+                    evento.innerHTML += "<p></p><span class='m-md-4'>Tipologia: "+rsp[0].tipologia+"</span>";
                     //visualizzo gli invitati
                     let string = "";
                     rsp[0].invitati.forEach(invitato => {
@@ -50,8 +51,8 @@ socket.on("loginSucc", async(response) => {
                             string += invitato.username.substring(0,20);
                         }
                     })
-                    string = string.substring(0,50) + " . . .";
-                    evento.innerHTML += "<p></p><span class='m-4'>Invitati: "+string+"</span>";
+                    string = string.substring(0,50) + "...";
+                    evento.innerHTML += "<p></p><span class='m-md-4'>Invitati: "+(string.length > 0 && string != "..." ? string : "Nessuno") +"</span>";
                     let rspImg = await fetch("/download", {
                         method: 'POST',
                         headers: {
@@ -63,6 +64,7 @@ socket.on("loginSucc", async(response) => {
                     const url = URL.createObjectURL(rspImg);
                     immagine.src = url;
                     spinner.classList.add("d-none");
+                    dettagli.classList.remove("d-none");
                 } else {
                     window.location.href = "./home.html";
                 }
