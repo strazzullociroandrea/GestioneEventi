@@ -156,11 +156,11 @@ function generateRandomString(iLen) {
                 }
                 io.to(socket.id).emit("loginSucc", response[0].id);
               } else {
-                io.to(socket.id).emit("loginSucc", -1);
+                io.to(socket.id).emit("loginSucc", "Password non corretta");
               }
             });
           } else {
-            io.to(socket.id).emit("loginSucc", -1);
+            io.to(socket.id).emit("loginSucc", "Utente non registrato");
           }
         });
       } catch (e) {
@@ -407,15 +407,14 @@ function generateRandomString(iLen) {
       let errors = false;
       if (password != confirm_password) {
         // password errate
-        res.json({ result: "errore - le password non coincidono" });
+        res.json({ result: "Le password non coincidono" });
         errors = true;
       }
-      //console.log(email);
       // Controllo che sia del Molinari
       const splitted = email.split("@");
       if (splitted[1] != "itis-molinari.eu") {
         res.json({
-          result: "errore - email non valida - Non sei del nostro istituto!!!",
+          result: "Email non valida - Non sei del nostro istituto!!!",
         });
         errors = true;
       }
@@ -425,7 +424,7 @@ function generateRandomString(iLen) {
       if (!errors) {
         connectionToDB.executeQuery(query, [email]).then((response) => {
           if (response.length > 0) {
-            res.json({ result: "errore - email già registrata" });
+            res.json({ result: "Email già registrata" });
           } else {
             // Ok non è registrato
             // Cripto la password
@@ -453,8 +452,8 @@ function generateRandomString(iLen) {
         });
       }
     } catch (e) {
-      //console.log("registrazione error");
-      //console.log(e);
+      res.json({ result: "Registrazione fallita" });
+      
     }
   });
   app.post("/download", async (req, res) => {
