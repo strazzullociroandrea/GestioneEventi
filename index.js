@@ -680,6 +680,7 @@ function generateRandomString(iLen) {
     let results = await queryGetOtherUsers(userId);
     res.json(results);
   });
+  //da fare i lcontrollo invito doppio / invito rifiutato
   app.post("/invitaUtenti", async (req, res) => {
     const { userIds, eventId, emailCorrente } = req.body;
     try {

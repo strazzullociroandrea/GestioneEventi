@@ -127,5 +127,13 @@ crea.onclick = () => {
   window.location.href = "./evento.html";
 };
 socket.on("invitato", (response) => {
-  alert("Sei stato invitato ad un nuovo evento");
+  jSuites.notification({
+    name: 'Invito',
+    message: 'Sei stato invitato ad un nuovo evento',
+    timeout: 10000,
+    onclick: function() {
+      console.log("Notification clicked, redirecting...");
+      window.location.href = './inviti.html';
+  }
+})
 });
