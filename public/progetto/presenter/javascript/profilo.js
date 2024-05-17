@@ -4,6 +4,8 @@ const newPassword = document.getElementById("newPassword");
 const conferma = document.getElementById("conferma");
 const elimina = document.getElementById("elimina");
 const spinner = document.getElementById("spinner");
+const successo = document.getElementById("successo");
+const errore =  document.getElementById("errore");
 const socket = io();
 
 window.onload = () => {
@@ -33,6 +35,8 @@ indietro.onclick = () => {
 };
 
 conferma.onclick = async () => {
+  successo.classList.add("d-none");
+  errore.classList.add("d-none");
   spinner.classList.add("d-none");
   newPassword.classList.remove("border-danger");
   newPassword.classList.remove("border-success");
@@ -48,13 +52,19 @@ conferma.onclick = async () => {
   });
   rsp = await rsp.json();
   if (rsp.result) {
-    newPassword.classList.add("border-success");
+    successo.classList.remove("d-none");
+    setTimeout(()=>{
+      successo.classList.add("d-none");
+    },5000)
     sessionStorage.setItem("password", newPassword.value);
   } else {
-    newPassword.classList.add("border-danger");
+    errore.classList.remove("d-none");
+    setTimeout(()=>{
+      errore.classList.add("d-none");
+    },5000)
   }
   newPassword.value = "";
-  spinner.classList.remove("d-none");
+  spinner.classList.add("d-none");
 };
 
 elimina.onclick = async () => {
