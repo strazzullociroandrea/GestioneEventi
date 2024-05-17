@@ -34,7 +34,7 @@ const render = (result) => {
         .replace("%STATO", result[j].stato)
         .replaceAll("%ID", result[j].id)
         .replaceAll("%USERID", result[j].idUser)
-        .replace("%PROP?",result[j].username.toLowerCase() != sessionStorage.getItem("email").toLowerCase() ? "disabled": "");
+        .replace("%PROP?",result[j].username != sessionStorage.getItem("email")? "disabled": "");
     }
     html += "</div>";
   }

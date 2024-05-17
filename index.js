@@ -524,15 +524,16 @@ function generateRandomString(iLen) {
           fileName,
           file.buffer
         );
-        //console.log("File caricato con successo. Path: ", fileName);
+        console.log("File caricato con successo. Path: ", fileName);
         res.json({ result: true, link });
       } else {
+        console.log("File caricato con successo. Path: NESSUNO ");
         res.json({
           result: false,
         });
       }
     } catch (e) {
-      ////console.log(e);
+      console.log(e);
       res.json({
         result: false,
       });
