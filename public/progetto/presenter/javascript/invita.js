@@ -26,7 +26,6 @@ window.onload = () => {
 console.log("idUser", userId);
 
 buttonInvita.onclick = () => {
-  spinner.classList.remove("d-none");
   let selected = [];
   document.querySelectorAll("input[type=checkbox]").forEach((check) => {
     if (check.checked) {
@@ -40,31 +39,19 @@ buttonInvita.onclick = () => {
     id = item.split("-");
     users.push(id[1]);
   });
-  if (users.length > 0) {
-    fetch("/invitaUtenti", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        userIds: users,
-        eventId: eventId,
-      }),
-    });
-    console.log("go back");
-
-    window.history.back();
-  }
-  spinner.classList.remove("d-none");
-  //In selected ho l'elenco degli id degli utenti da invitare
-
-  console.log("invita", selected);
+  console.log("invita", selected, eventId);
   fetch("/invitaUtenti", {
     method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
     body: JSON.stringify({
-      userIds: selected,
+      userIds: users,
+      eventId: eventId,
     }),
   });
+  console.log("go back");
+  window.history.back();
 };
 const render = () => {
   let html = "";
