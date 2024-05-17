@@ -14,14 +14,14 @@ const db = (conf, fs) => {
     });
 
     const executeQuery = (sql, val) => {
-        console.log(sql);
+        //console.log(sql);
         return new Promise((resolve, reject) => {
             connection.query(sql, val, function (err, result) {
                 if (err) {
-                    console.error(err);
+                    //console.error(err);
                     reject(err);
                 }
-                console.log('done');
+                //console.log('done');
                 resolve(result);
             });
         })

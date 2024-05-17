@@ -29,10 +29,10 @@ if (existingFolder) {
 export const megaFunction = {
   uploadFileToStorage: async (name, data) => {
     const filePath = path.join(name);
-    console.log(filePath);
+    //console.log(filePath);
     const file = await folder.upload(filePath, data).complete;
     const link = await file.link();
-    console.log(link);
+    //console.log(link);
     return link;
   },
   downloadFileFromLink: async (link) => {
@@ -43,7 +43,7 @@ export const megaFunction = {
       const fileName = file.name;
       return { stream, fileName };
     } catch (error) {
-      console.error(error);
+      //console.error(error);
     }
   },
 };

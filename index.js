@@ -17,6 +17,7 @@ import { megaFunction } from "./server/mega.js";
 import { Server } from "socket.io";
 
 import bcrypt from "bcrypt";
+import { Console } from "console";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -50,7 +51,7 @@ const invita = (array, evento, ev) => {
   return new Promise((resolve, reject) => {
     const eventiSospesi = [];
     array.forEach((utente) => {
-      //console.log(utente);
+      ////console.log(utente);
       const associazione = associazioni.find((element) => {
         return element?.email == utente;
       });
@@ -106,6 +107,7 @@ function generateRandomString(iLen) {
       dict.posizione,
       dict.email,
     ];
+    console.log(values);
     return connectionToDB.executeQuery(sql, values);
   };
 
@@ -256,7 +258,7 @@ function generateRandomString(iLen) {
               });
             })
             .catch((error) => {
-              //console.log(error);
+              ////console.log(error);
               io.to(socket.id).emit("getResult", { result: [] });
             });
         }
@@ -330,22 +332,20 @@ function generateRandomString(iLen) {
           evento.posizione !== "" &&
           evento.email
         ) {
-          console.log("MArameo2);");
           await queryInsertEvent(evento);
-          console.log("OK");
           //da richiamare in questo modo per notificare gli invitati
-          //invita(evento.invitati, evento 'invitato');
+          await invita(evento.invitati, evento, 'invitato');
+          console.log("marameo");
           io.to(socket.id).emit("insertSuccess", {
             result: "OK",
           });
         } else {
-          console.log("NO");
           io.to(socket.id).emit("insertSuccess", {
             result: "Non è stato possibile aggiungere l'evento",
           });
         }
       } catch (e) {
-        console.log(e);
+        //console.log(e);
         io.to(socket.id).emit("insertSuccess", { result: e });
       }
     });
@@ -392,7 +392,7 @@ function generateRandomString(iLen) {
             const query = "DELETE FROM invitare WHERE idUser IN (SELECT id FROM user WHERE username = ?)";
             connectionToDB.executeQuery(query, [emailCorrente])
               .then(() => {
-                console.log("Invito eliminato");
+                //console.log("Invito eliminato");
                 res.json({ result: "OK" });
               })
               .catch((error) => {
@@ -460,7 +460,7 @@ function generateRandomString(iLen) {
 
                   res.json({ result: "ok" });
                 })
-                .catch((err) => console.error(err.message));
+                .catch((err) =>{}) //console.error(err.message));
             });
           }
         });
@@ -484,7 +484,7 @@ function generateRandomString(iLen) {
       ); // Imposta l'header per il download del file
       res.send(buffer); // Invia il buffer come risposta al client
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       res.status(500).send("Errore del server");
     }
   });
@@ -497,7 +497,7 @@ function generateRandomString(iLen) {
           fileName,
           file.buffer
         );
-        console.log("File caricato con successo. Path: ", fileName);
+        //console.log("File caricato con successo. Path: ", fileName);
         res.json({ result: true, link });
       } else {
         res.json({
@@ -505,7 +505,7 @@ function generateRandomString(iLen) {
         });
       }
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
       res.json({
         result: false,
       });
@@ -514,14 +514,14 @@ function generateRandomString(iLen) {
 
   app.get("/getImage", async (req, res) => {
     try {
-      console.log("ci sono ----");
+      //console.log("ci sono ----");
       const link = req.query.link;
-      console.log("link", link);
+      //console.log("link", link);
       if (link) {
         const { stream, fileName } = await megaFunction.downloadFileFromLink(
           link
         );
-        console.log("File scaricato con successo. Path: ", fileName);
+        //console.log("File scaricato con successo. Path: ", fileName);
         res.download(stream);
       } else {
         res.json({
@@ -529,7 +529,7 @@ function generateRandomString(iLen) {
         });
       }
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
       res.json({
         result: false,
       });
@@ -562,7 +562,7 @@ function generateRandomString(iLen) {
 
                 res.json(true);
               })
-              .catch((err) => console.error(err.message));
+              .catch((err) => {})//console.error(err.message));
           });
         } else {
           // email non presente
@@ -570,7 +570,7 @@ function generateRandomString(iLen) {
         }
       });
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
     }
   });
   app.post("/changePassword", async (req, res) => {
@@ -634,7 +634,7 @@ function generateRandomString(iLen) {
   const queryGetOtherUsers = async (userId, eventId) => {
     const sqlInvited = `SELECT idUser FROM invitare WHERE idEvento = ?`;
     const invited = await connectionToDB.executeQuery(sqlInvited, [eventId]);
-    console.log("invited", invited);
+    //console.log("invited", invited);
 
     let invitedSQL = "(";
     invited.forEach((inv) => {
@@ -654,30 +654,54 @@ function generateRandomString(iLen) {
   app.get("/getOtherUsers", async (req, res) => {
     const { userId } = req.query;
     let results = await queryGetOtherUsers(userId);
-    console.log("userId = ", userId, results);
+    //console.log("userId = ", userId, results);
     res.json(results);
   });
 
   app.get("/getOtherUsers", async (req, res) => {
     const { userId, eventId } = req.query;
     const results = await queryGetOtherUsers(userId, eventId);
-    console.log("userId = ", userId, results);
+    //console.log("userId = ", userId, results);
     res.json(results);
   });
   app.post("/invitaUtenti", async (req, res) => {
     const { userIds, eventId } = req.body;
-    console.log("utenti", userIds, req.body);
-    let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
-    userIds.forEach((userId) => {
-      sql += "('Da Accettare'," + eventId + "," + userId + "),";
-    });
-    sql = sql.slice(0, -1) + ";";
-    return await connectionToDB.executeQuery(sql);
+    try {
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "userIds deve essere un array non vuoto" });
+      }
+      const recupraUsername = "SELECT username FROM user WHERE id = ?";
+      const recuperaUsernames = async (userIds) => {
+        const promises = userIds.map(userId =>
+          connectionToDB.executeQuery(recupraUsername, [userId])
+        );
+        const results = await Promise.all(promises);
+        return results.map(result => result[0].username);
+      };
+      const arrayUsername = await recuperaUsernames(userIds);
+      const sqlEvento = "SELECT * FROM evento WHERE id = ?";
+      const rsp = await connectionToDB.executeQuery(sqlEvento, [eventId]);
+      if (rsp.length === 0) {
+        return res.status(404).json({ error: "Evento non trovato" });
+      }
+      // Notifica gli invitati
+      await invita(arrayUsername, rsp[0], 'invitato');
+      // Inserisco gli inviti
+      let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
+      sql += userIds.map(userId => `('Da Accettare', ${eventId}, ${userId})`).join(",") + ";";
+      // Esegue la query per inserire gli inviti
+      await connectionToDB.executeQuery(sql);
+      res.status(200).json({ message: "Utenti invitati con successo" });
+    } catch (error) {
+      console.error("Errore durante l'invito degli utenti:", error);
+      res.status(500).json({ error: "Errore durante l'invito degli utenti" });
+    }
   });
+  
   /**
    *Avvio del serever
    */
   server.listen(conf.port, () => {
-    console.log("---> server running on port " + conf.port);
+    //console.log("---> server running on port " + conf.port);
   });
 })();
