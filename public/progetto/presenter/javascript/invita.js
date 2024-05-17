@@ -48,9 +48,9 @@ buttonInvita.onclick = () => {
     body: JSON.stringify({
       userIds: users,
       eventId: eventId,
+      emailCorrente: sessionStorage.getItem("email")
     }),
   });
-  console.log("go back");
   window.history.back();
 };
 const render = () => {
