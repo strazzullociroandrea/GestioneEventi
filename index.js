@@ -75,8 +75,8 @@ const invita = (array, evento, ev) => {
           utente,
           "Nuovo evento",
           "Ciao <strong>" +
-            utente +
-            "</strong>. <br>Sei stato invitato ad un nuovo evento. <br>Accedi alla tua area personale per visualizzarlo."
+          utente +
+          "</strong>. <br>Sei stato invitato ad un nuovo evento. <br>Accedi alla tua area personale per visualizzarlo."
         );
       }
     });
@@ -119,7 +119,7 @@ function generateRandomString(iLen) {
   };
 
   const queryGetAllUserEvents = (email) => {
-    const sql = `SELECT evento.* FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
+    const sql = `SELECT evento.*, user.username FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
     return connectionToDB.executeQuery(sql);
   };
   const queryEventiInvitati = (email) => {
@@ -239,7 +239,7 @@ function generateRandomString(iLen) {
             "Invito accettato",
             "Ciao <strong>" +
             evento[0].username +
-              "</strong>. <br>L'utente <strong>"+partecipante[0].username+"</strong> ha accettato il tuo invito."
+            "</strong>. <br>L'utente <strong>" + partecipante[0].username + "</strong> ha accettato il tuo invito."
           );
           io.to(socket.id).emit("accettaInvitoRes", true);
         } else {
@@ -267,7 +267,7 @@ function generateRandomString(iLen) {
             "Invito accettato",
             "Ciao <strong>" +
             evento[0].username +
-              "</strong>. <br>L'utente <strong>"+partecipante[0].username+"</strong> ha accettato il tuo invito."
+            "</strong>. <br>L'utente <strong>" + partecipante[0].username + "</strong> ha accettato il tuo invito."
           );
           io.to(socket.id).emit("rifiutaInvitoRes", true);
         } else {
@@ -438,7 +438,7 @@ function generateRandomString(iLen) {
       res.json({ result: "attributi non valorizzati" });
     }
   });
-  
+
   /**
    * Registrazione di un nuovo utente
    */
@@ -480,21 +480,21 @@ function generateRandomString(iLen) {
                     email,
                     "Registrazione Avvenuta con successo",
                     "Ciao <strong>" +
-                      email +
-                      "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
-                      password
+                    email +
+                    "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
+                    password
                   );
 
                   res.json({ result: "ok" });
                 })
-                .catch((err) =>{}) //console.error(err.message));
+                .catch((err) => { }) //console.error(err.message));
             });
           }
         });
       }
     } catch (e) {
       res.json({ result: "Registrazione fallita" });
-      
+
     }
   });
   app.post("/download", async (req, res) => {
@@ -585,7 +585,7 @@ function generateRandomString(iLen) {
 
                 res.json(true);
               })
-              .catch((err) => {})//console.error(err.message));
+              .catch((err) => { })//console.error(err.message));
           });
         } else {
           // email non presente
@@ -608,8 +608,8 @@ function generateRandomString(iLen) {
           "Cambio passoword avvenuta con successo",
           "Ciao <strong>" +
           username +
-            "</strong>. <br>La tua password è stata modificata con successo.<br>La tua nuova password è:" +
-            newPassword
+          "</strong>. <br>La tua password è stata modificata con successo.<br>La tua nuova password è:" +
+          newPassword
         );
         res.json({ result: true });
       });
@@ -646,8 +646,8 @@ function generateRandomString(iLen) {
         username,
         "Eliminazione account avvenuta con successo",
         "Ciao <strong>" +
-          username +
-          "</strong>. <br>Il tuo account è stato eliminato con successo." );
+        username +
+        "</strong>. <br>Il tuo account è stato eliminato con successo.");
       res.json({ result: true });
     } else {
       res.json({ result: false });
@@ -680,39 +680,47 @@ function generateRandomString(iLen) {
     res.json(results);
   });
   app.post("/invitaUtenti", async (req, res) => {
-    const { userIds, eventId } = req.body;
+    const { userIds, eventId, emailCorrente } = req.body;
     try {
-      if (!Array.isArray(userIds) || userIds.length === 0) {
-        return res.status(400).json({ error: "userIds deve essere un array non vuoto" });
+      const queryVerifica = "SELECT username FROM user INNER JOIN evento ON username.id = evento.idUser WHERE evento.id = ?";
+      const rspp = await connectionToDB.executeQuery(queryVerifica, [eventId])
+      if (rsp[0].username && rsp[0].username == emailCorrente) {
+
+
+        if (!Array.isArray(userIds) || userIds.length === 0) {
+          return res.status(400).json({ error: "userIds deve essere un array non vuoto" });
+        }
+        const recupraUsername = "SELECT username FROM user WHERE id = ?";
+        const recuperaUsernames = async (userIds) => {
+          const promises = userIds.map(userId =>
+            connectionToDB.executeQuery(recupraUsername, [userId])
+          );
+          const results = await Promise.all(promises);
+          return results.map(result => result[0].username);
+        };
+        const arrayUsername = await recuperaUsernames(userIds);
+        const sqlEvento = "SELECT * FROM evento WHERE id = ?";
+        const rsp = await connectionToDB.executeQuery(sqlEvento, [eventId]);
+        if (rsp.length === 0) {
+          return res.status(404).json({ error: "Evento non trovato" });
+        }
+        // Notifica gli invitati
+        await invita(arrayUsername, rsp[0], 'invitato');
+        // Inserisco gli inviti
+        let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
+        sql += userIds.map(userId => `('Da Accettare', ${eventId}, ${userId})`).join(",") + ";";
+        // Esegue la query per inserire gli inviti
+        await connectionToDB.executeQuery(sql);
+        res.status(200).json({ message: "Utenti invitati con successo" });
+      } else {
+        res.status(404).json({ message: "L'utente non è il proprietario dell'invito" });
       }
-      const recupraUsername = "SELECT username FROM user WHERE id = ?";
-      const recuperaUsernames = async (userIds) => {
-        const promises = userIds.map(userId =>
-          connectionToDB.executeQuery(recupraUsername, [userId])
-        );
-        const results = await Promise.all(promises);
-        return results.map(result => result[0].username);
-      };
-      const arrayUsername = await recuperaUsernames(userIds);
-      const sqlEvento = "SELECT * FROM evento WHERE id = ?";
-      const rsp = await connectionToDB.executeQuery(sqlEvento, [eventId]);
-      if (rsp.length === 0) {
-        return res.status(404).json({ error: "Evento non trovato" });
-      }
-      // Notifica gli invitati
-      await invita(arrayUsername, rsp[0], 'invitato');
-      // Inserisco gli inviti
-      let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
-      sql += userIds.map(userId => `('Da Accettare', ${eventId}, ${userId})`).join(",") + ";";
-      // Esegue la query per inserire gli inviti
-      await connectionToDB.executeQuery(sql);
-      res.status(200).json({ message: "Utenti invitati con successo" });
     } catch (error) {
       console.error("Errore durante l'invito degli utenti:", error);
       res.status(500).json({ error: "Errore durante l'invito degli utenti" });
     }
   });
-  
+
   /**
    *Avvio del serever
    */

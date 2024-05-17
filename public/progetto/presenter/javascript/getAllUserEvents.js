@@ -4,7 +4,7 @@ const table = document.getElementById("table");
 const logout = document.getElementById("logout");
 const socket = io();
 const templateEvento =
-  '<div class="col-4 text-center card relative"><div style="z-index:100;"><p>%TITOLO</p><p>%SCADENZA</p> <p>%DESCRIZIONE</p><p>%TIPOLOGIA</p><p>%STATO</p><button class="btn btn-info viewEvento mx-1" id="%ID">Visualizza</button><button class="btn btn-warning invitaEvento mx-1" id="%ID">Invita</button><button class="btn btn-danger deleteEvent mx-1" id="delete-%ID-%USERID">elimina evento</button></div><img src="%IMG" style="position:absolute; top:0;left:0;right:0;bottom:0; width:100%;height:100%; z-index:0"></div>';
+  '<div class="col-4 text-center card relative"><div style="z-index:100;"><p>%TITOLO</p><p>%SCADENZA</p> <p>%DESCRIZIONE</p><p>%TIPOLOGIA</p><p>%STATO</p><button class="btn btn-info viewEvento mx-1" id="%ID">Visualizza</button><button class="btn btn-warning invitaEvento mx-1" id="%ID" %PROP?>Invita</button><button class="btn btn-danger deleteEvent mx-1" id="delete-%ID-%USERID">elimina evento</button></div><img src="%IMG" style="position:absolute; top:0;left:0;right:0;bottom:0; width:100%;height:100%; z-index:0"></div>';
 const eventi = document.getElementById("eventi");
 const crea = document.getElementById("crea");
 const inviti = document.getElementById("inviti");
@@ -21,6 +21,7 @@ const render = (result) => {
   for (let i = 0; i < result.length; i += 3) {
     html += '<div class="row justify-content-center mt-4">';
     for (let j = i; j < Math.min(i + 3, result.length); j++) {
+      console.log(result[j]);
       html += templateEvento
         .replace("%TITOLO", result[j].titolo)
         .replace(
@@ -32,21 +33,20 @@ const render = (result) => {
         .replace("%TIPOLOGIA", result[j].tipologia)
         .replace("%STATO", result[j].stato)
         .replaceAll("%ID", result[j].id)
-        .replaceAll("%USERID", result[j].idUser);
+        .replaceAll("%USERID", result[j].idUser)
+        .replace("%PROP?",result[j].username.toLowerCase() != sessionStorage.getItem("email").toLowerCase() ? "disabled": "");
     }
     html += "</div>";
   }
   eventi.innerHTML = html;
   document.querySelectorAll(".viewEvento").forEach((button) => {
     button.onclick = () => {
-      //console.log(button.id);
       window.location.href = "./dettaglioEvento.html?idEvento="+button.id
     };
   });
 
   document.querySelectorAll(".invitaEvento").forEach((button) => {
     button.onclick = () => {
-      //console.log(button.id);
       window.location.href =
         "./invita.html?idEvento=" + button.id + "&idUser=13";
     };
