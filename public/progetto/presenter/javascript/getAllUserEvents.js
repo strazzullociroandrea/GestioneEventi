@@ -67,6 +67,7 @@ const render = (result) => {
             idEvento: id[1],
             idUtente: id[2],
           },
+          emailCorrente: sessionStorage.getItem("email")
         }),
       }).then((res) => {
         location.reload();

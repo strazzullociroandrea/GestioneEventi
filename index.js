@@ -128,7 +128,7 @@ function generateRandomString(iLen) {
   };
 
   const queryUtentiInvitati = (idEvent) => {
-    const sql = `SELECT invitare.idUser from invitare JOIN evento ON invitare.idEvento = evento.id WHERE invitare.idEvento =${idEvent}`;
+    const sql = `SELECT invitare.idUser, user.username from invitare JOIN evento  ON invitare.idEvento = evento.id JOIN user ON user.id = invitare.idUser WHERE invitare.idEvento =${idEvent}`;
     return connectionToDB.executeQuery(sql);
   };
   io.on("connection", (socket) => {
@@ -353,39 +353,53 @@ function generateRandomString(iLen) {
 
   //da trasformare in socket ed inviare la notifica ai client che quando la ricevono rifanno il render della pagina
   app.post("/deleteEvento", (req, res) => {
-    const event = req.body.event;
+    const { event, emailCorrente } = req.body;
     if (event.idEvento !== "" && event.idUtente !== "") {
       queryUtentiInvitati(event.idEvento)
         .then((result) => {
           const array = [];
           result.forEach((e) => {
-            array.push(e.idUser);
+            array.push(e.username);
           });
-          invita(array, event.idEvento, "elimina")
-            .then(() => {
-              queryGetUserIdOfEvent(event.idEvento)
-                .then((json) => {
-                  if (json[0].idUser == event.idUtente) {
-                    queryDeleteEvento(event)
-                      .then(() => {
-                        res.json({ result: "ok" });
-                      })
-                      .catch((error) => {
-                        res.json({ result: "errore nella delete: " + error });
-                      });
-                  }
-                })
-                .catch((error) => {
-                  res.json({
-                    result:
-                      "errore nella select del proprietario dell'evento: " +
-                      error,
+          if (!array.includes(emailCorrente)) {
+            invita(array, event.idEvento, "eliminaRes")
+              .then(() => {
+                queryGetUserIdOfEvent(event.idEvento)
+                  .then((json) => {
+                    if (json[0].idUser == event.idUtente) {
+                      queryDeleteEvento(event)
+                        .then(() => {
+                          res.json({ result: "ok" });
+                        })
+                        .catch((error) => {
+                          res.json({ result: "errore nella delete: " + error });
+                        });
+                    }
+                  })
+                  .catch((error) => {
+                    res.json({
+                      result:
+                        "errore nella select del proprietario dell'evento: " +
+                        error,
+                    });
                   });
-                });
-            })
-            .catch((error) => {
-              res.json({ result: "errore nella funzione invita: " + error });
-            });
+              })
+              .catch((error) => {
+                res.json({ result: "errore nella funzione invita: " + error });
+              });
+          } else {
+            // Elimina solo l'invito
+            const query = "DELETE FROM invitare WHERE idUser IN (SELECT id FROM user WHERE username = ?)";
+            connectionToDB.executeQuery(query, [emailCorrente])
+              .then(() => {
+                console.log("Invito eliminato");
+                res.json({ result: "OK" });
+              })
+              .catch((error) => {
+                res.json({ result: "errore nell'eliminazione dell'invito: " + error });
+              });
+
+          }
         })
         .catch((error) => {
           res.json({
@@ -397,7 +411,7 @@ function generateRandomString(iLen) {
       res.json({ result: "attributi non valorizzati" });
     }
   });
-
+  
   /**
    * Registrazione di un nuovo utente
    */
