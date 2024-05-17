@@ -2,7 +2,7 @@ const indietro = document.getElementById("indietro");
 const socket = io();
 const inviti = document.getElementById("inviti");
 const templateInvito =
-  '<div class="row card"><table class="w-100"><tr> <td><p>%PROPRIETARIO ti ha invitato a partecipare ad un evento chiamato <b>%TITOLOEVENTO</b></p></td><td><button class="btn btn-success btnacc" id="%ID">Accetta</button></td><td><button class="btn btn-danger btndel" id="%ID">Elimina</button></td></tr></table></div>';
+  '<div class="invito"><div class="row alert alert-warning w-50"><table class="w-100"><tr> <td><p>%PROPRIETARIO ti ha invitato a partecipare ad un evento chiamato <b>%TITOLOEVENTO</b></p></td><td class="button-cell"><button class="btn btn-success btnacc" id="%ID">Accetta</button></td><td class="button-cell"><button class="btn btn-danger btndel" id="%ID">Elimina</button></td> </tr></table></div></div>';
 const spinner = document.getElementById("spinner");
 
 window.onload = () => {
@@ -70,7 +70,7 @@ socket.on("resultGetInviti", (response) => {
       };
     });
   } else {
-    inviti.innerHTML = "<p>Non hai inviti da accettare</p>";
+    inviti.innerHTML = '<div class="alert alert-warning w-50" role="alert">Non hai inviti da accettare</div>';
   }
   spinner.classList.add("d-none");
 });
