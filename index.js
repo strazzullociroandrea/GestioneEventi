@@ -62,14 +62,22 @@ const invita = (array, evento, ev) => {
         });
       } else {
         //gestione eventi utente invitato - sospesi per offline
-        const user = eventiSospesi.findIndex(
+        /*const user = eventiSospesi.findIndex(
           (element) => element?.email == utente
         );
         if (user != -1) {
           eventiSospesi[user]["eventi"].push(evento);
         } else {
           eventiSospesi.push({ email: utente, eventi: [evento] });
-        }
+        }*/
+        emailer.send(
+          conf,
+          utente,
+          "Nuovo evento",
+          "Ciao <strong>" +
+            utente +
+            "</strong>. <br>Sei stato invitato ad un nuovo evento. <br>Accedi alla tua area personale per visualizzarlo."
+        );
       }
     });
     resolve();
@@ -107,7 +115,6 @@ function generateRandomString(iLen) {
       dict.posizione,
       dict.email,
     ];
-    console.log(values);
     return connectionToDB.executeQuery(sql, values);
   };
 
@@ -172,7 +179,7 @@ function generateRandomString(iLen) {
     socket.on("getEvento", async (idEvento) => {
       //bisogna conrtollare che chi lo vuole vedere sia un invitato o il proprietario altrimenti restituisce un arrya vuoto
       try {
-        //bisogna prendere anche gli inviti solo se sono accettati
+        //bisogna prendere anche gli inviti solo se sono accettati -> fatto ?
         const rsp = await connectionToDB.executeQuery(
           "SELECT * FROM evento WHERE id=?",
           [idEvento]
@@ -222,6 +229,18 @@ function generateRandomString(iLen) {
           const sqlUpdate =
             "UPDATE invitare SET stato = 'Accettato' WHERE idEvento = ? AND idUser = ?";
           await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
+          const eventoSql = "SELECT * FROM evento INNER JOIN user ON user.id = evento.idUser WHERE id= ? ";
+          const evento = await connectionToDB.executeQuery(eventoSql, [idEvento]);
+          const partecipanteSql = "SELECT username FROM user INNER JOIN invitare ON invitare.idUser = user.id WHERE idEvento = ?";
+          const partecipante = await connectionToDB.executeQuery(partecipanteSql, [idUser]);
+          emailer.send(
+            conf,
+            evento[0].username,
+            "Invito accettato",
+            "Ciao <strong>" +
+            evento[0].username +
+              "</strong>. <br>L'utente <strong>"+partecipante[0].username+"</strong> ha accettato il tuo invito."
+          );
           io.to(socket.id).emit("accettaInvitoRes", true);
         } else {
           io.to(socket.id).emit("accettaInvitoRes", false);
@@ -238,6 +257,18 @@ function generateRandomString(iLen) {
           const sqlUpdate =
             "UPDATE invitare SET stato = 'Non accettato' WHERE idEvento = ? AND idUser = ?";
           await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
+          const eventoSql = "SELECT * FROM evento INNER JOIN user ON user.id = evento.idUser WHERE id= ? ";
+          const evento = await connectionToDB.executeQuery(eventoSql, [idEvento]);
+          const partecipanteSql = "SELECT username FROM user INNER JOIN invitare ON invitare.idUser = user.id WHERE idEvento = ?";
+          const partecipante = await connectionToDB.executeQuery(partecipanteSql, [idUser]);
+          emailer.send(
+            conf,
+            evento[0].username,
+            "Invito accettato",
+            "Ciao <strong>" +
+            evento[0].username +
+              "</strong>. <br>L'utente <strong>"+partecipante[0].username+"</strong> ha accettato il tuo invito."
+          );
           io.to(socket.id).emit("rifiutaInvitoRes", true);
         } else {
           io.to(socket.id).emit("rifiutaInvitoRes", false);
@@ -266,7 +297,7 @@ function generateRandomString(iLen) {
         io.to(socket.id).emit("getResult", { result: e });
       }
     });
-    //manca la possibilità di cambiare/aggiungere immagini e gli invitati
+    //manca la possibilità di cambiare/aggiungere immagini e gli invitati -> usata?
     socket.on("updateEvento", async (dizionario) => {
       try {
         const {
@@ -321,7 +352,7 @@ function generateRandomString(iLen) {
         io.to(socket.id).emit("resultUpdateEvento", { result: e });
       }
     });
-    //servizio per inserire un evento - controllare che ci siano persone invitate che non sono iscritte
+    //servizio per inserire un evento
     socket.on("insertEvento", async (evento) => {
       try {
         if (
@@ -333,9 +364,6 @@ function generateRandomString(iLen) {
           evento.email
         ) {
           await queryInsertEvent(evento);
-          //da richiamare in questo modo per notificare gli invitati
-          await invita(evento.invitati, evento, 'invitato');
-          console.log("marameo");
           io.to(socket.id).emit("insertSuccess", {
             result: "OK",
           });
@@ -345,7 +373,6 @@ function generateRandomString(iLen) {
           });
         }
       } catch (e) {
-        //console.log(e);
         io.to(socket.id).emit("insertSuccess", { result: e });
       }
     });
@@ -514,14 +541,11 @@ function generateRandomString(iLen) {
 
   app.get("/getImage", async (req, res) => {
     try {
-      //console.log("ci sono ----");
       const link = req.query.link;
-      //console.log("link", link);
       if (link) {
         const { stream, fileName } = await megaFunction.downloadFileFromLink(
           link
         );
-        //console.log("File scaricato con successo. Path: ", fileName);
         res.download(stream);
       } else {
         res.json({
@@ -529,7 +553,6 @@ function generateRandomString(iLen) {
         });
       }
     } catch (e) {
-      ////console.log(e);
       res.json({
         result: false,
       });
@@ -654,14 +677,6 @@ function generateRandomString(iLen) {
   app.get("/getOtherUsers", async (req, res) => {
     const { userId } = req.query;
     let results = await queryGetOtherUsers(userId);
-    //console.log("userId = ", userId, results);
-    res.json(results);
-  });
-
-  app.get("/getOtherUsers", async (req, res) => {
-    const { userId, eventId } = req.query;
-    const results = await queryGetOtherUsers(userId, eventId);
-    //console.log("userId = ", userId, results);
     res.json(results);
   });
   app.post("/invitaUtenti", async (req, res) => {
@@ -702,6 +717,6 @@ function generateRandomString(iLen) {
    *Avvio del serever
    */
   server.listen(conf.port, () => {
-    //console.log("---> server running on port " + conf.port);
+    console.log("---> server running on port " + conf.port);
   });
 })();
