@@ -60,9 +60,7 @@ conferma.onclick = async () => {
 
 elimina.onclick = async () => {
     spinner.classList.remove("d-none");
-    const rsp = await eliminaProfilo();
-    if (rsp.result) {
+    eliminaProfilo();
       sessionStorage.clear();
       window.location.href = "./login.html";
-    }
-  };
+};

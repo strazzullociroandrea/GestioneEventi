@@ -1,6 +1,8 @@
 const inviti = document.getElementById("inviti");
+const templateInvito =
+  '<div class="invito"><div class="row alert alert-warning w-50"><table class="w-100"><tr> <td><p>%PROPRIETARIO ti ha invitato a partecipare ad un evento chiamato <b>%TITOLOEVENTO</b></p></td><td class="button-cell"><button class="btn btn-success btnacc" id="%ID">Accetta</button></td><td class="button-cell"><button class="btn btn-danger btndel" id="%ID">Elimina</button></td> </tr></table></div></div>';
 
-export const render = (response) =>{
+export const render = (response, socket) =>{
     let html = "";
     response?.result.forEach((invito) => {
       html += templateInvito

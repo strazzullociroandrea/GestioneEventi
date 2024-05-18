@@ -37,5 +37,5 @@ socket.on("invitato", (response) => {
 });
 
 socket.on("resultGetInviti", (response) => {
-    render(response);
+    render(response, socket);
 });
