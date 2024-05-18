@@ -20,10 +20,12 @@ indietro.onclick = () =>{
 socket.on("loginSucc", async(response) => {
     if(response !== -1){
         const {html, urlImmagine} = await eventoView(idEvento);
-        evento.innerHTML = html;
-        immagine.src = urlImmagine;
-        spinner.classList.add("d-none");
-        dettagli.classList.remove("d-none");
+        if(html && urlImmagine){
+            evento.innerHTML = html;
+            immagine.src = urlImmagine;
+            spinner.classList.add("d-none");
+            dettagli.classList.remove("d-none");
+        }
     }else{
         window.location.href = "./login.html";
     }

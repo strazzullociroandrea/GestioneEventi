@@ -2,7 +2,7 @@ const inviti = document.getElementById("inviti");
 
 export const render = (response) =>{
     let html = "";
-    response.result.forEach((invito) => {
+    response?.result.forEach((invito) => {
       html += templateInvito
         .replace("%TITOLOEVENTO", invito.titolo)
         .replace("%PROPRIETARIO", invito.proprietario)

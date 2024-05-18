@@ -23,12 +23,10 @@ resetPassword.onclick = () => {
                 divAlert.classList.remove("d-none");
             }
             spinner.classList.add("d-none");
-
         })
     } else {
         testoAlert.innerText = "Scrivi solo \"RESET\"";
         divAlert.classList.remove("d-none");
         spinner.classList.add("d-none");
-
     }
 }

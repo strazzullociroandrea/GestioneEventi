@@ -27,11 +27,6 @@ indietro.onclick = () => {
     window.history.back();
 };
 
-indietro.onclick = () => {
-    //spinner.classList.remove("d-none");
-    window.history.back();
-};
-
 buttonInvita.onclick = async() => {
     let selected = [];
     document.querySelectorAll("input[type=checkbox]").forEach((check) => {
