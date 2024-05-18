@@ -1,3 +1,4 @@
+import {login} from "./dataAccess/login.js";
 const urlParams = new URLSearchParams(window.location.search);
 const idEvento = urlParams.get('idEvento');
 const socket = io();
@@ -8,16 +9,7 @@ const spinner = document.getElementById("spinner");
 const dettagli =  document.getElementById("dettagli");
 
 window.onload = async () => {
-    const user = sessionStorage.getItem("email");
-    const password = sessionStorage.getItem("password");
-    if (user && user !== "" && password && password !== "") {
-        socket.emit("login", {
-            email: user,
-            password: password,
-        });
-    } else {
-        window.location.href = "./login.html";
-    }
+    login(socket);
 };
 
 socket.on("loginSucc", async(response) => {
@@ -37,7 +29,6 @@ socket.on("loginSucc", async(response) => {
                 rsp = await rsp.json();
                 rsp = rsp.result;
                 if(rsp){
-                    console.log(rsp);
                     evento.innerHTML = "<h1 class='m-md-4'>Titolo: "+rsp[0].titolo+"</h1>";
                     evento.innerHTML += "<span class='m-md-4'>Descrizione: "+rsp[0].descrizione+"</span>";
                     evento.innerHTML += "<p></p><span class='m-md-4'>Posizione: "+rsp[0].posizione+"</span>";
