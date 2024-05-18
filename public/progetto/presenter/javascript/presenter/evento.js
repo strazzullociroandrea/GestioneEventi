@@ -29,7 +29,7 @@ socket.on("insertSuccess", (response) => {
       descrizione.classList.add("border-danger");
       posizione.classList.add("border-danger");
       immagine.classList.add("border-danger");
-      window.location.href = "./home.js";
+      window.location.href = "./home.html";
     } else {
       dataOraScadenza.value =
         tipologia.value =
