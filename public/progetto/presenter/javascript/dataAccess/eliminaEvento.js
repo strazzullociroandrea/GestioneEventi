@@ -14,6 +14,5 @@ export const eliminaEvento = async(id) =>{
         }),
       }).then((res) => {
         location.reload();
-        console.log(res);
       });
 }
