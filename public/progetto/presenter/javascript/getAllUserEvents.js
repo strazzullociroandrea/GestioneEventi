@@ -17,7 +17,6 @@ const deleteEvent = (id) => {
 
 const render = (result) => {
   let html = "";
-
   for (let i = 0; i < result.length; i += 3) {
     html += '<div class="row justify-content-center mt-4">';
     for (let j = i; j < Math.min(i + 3, result.length); j++) {
@@ -117,7 +116,6 @@ socket.on("loginSucc", (response) => {
 });
 
 socket.on("getResult", (response) => {
-  console.log("response", response);
   const { result } = response;
   render(result);
 });
