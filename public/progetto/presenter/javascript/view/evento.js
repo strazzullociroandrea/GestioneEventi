@@ -8,11 +8,11 @@ export const eventoView = async (idevento) => {
     html += "<p></p><span class='m-md-4'>Posizione: " + evento.posizione + "</span>";
     html += "<p></p><span class='m-md-4'>Tipologia: " + evento.tipologia + "</span>";
     let string = "";
-    evento.invitati.forEach(invitato => {
-        if (invitato.username == sessionStorage.getItem("email")) {
-            string += "TU";
-        } else {
-            string += invitato.username.substring(0, 20);
+    rsp[0].invitati.forEach(invitato => {
+        if(invitato.username == sessionStorage.getItem("email")){
+            string += "TU, ";
+        }else{
+            string += invitato.username.substring(0,20)+", ";
         }
     })
     string = string.substring(0, 50) + "...";

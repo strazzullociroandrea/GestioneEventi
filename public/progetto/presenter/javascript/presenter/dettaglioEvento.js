@@ -9,6 +9,7 @@ const evento = document.getElementById("evento");
 const immagine =  document.getElementById("immagine");
 const spinner = document.getElementById("spinner");
 const dettagli =  document.getElementById("dettagli");
+
 window.onload = async () => {
     login(socket);
 };

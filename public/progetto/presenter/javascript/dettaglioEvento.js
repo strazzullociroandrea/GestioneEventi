@@ -37,9 +37,9 @@ socket.on("loginSucc", async(response) => {
                     let string = "";
                     rsp[0].invitati.forEach(invitato => {
                         if(invitato.username == sessionStorage.getItem("email")){
-                            string += "TU";
+                            string += "TU, ";
                         }else{
-                            string += invitato.username.substring(0,20);
+                            string += invitato.username.substring(0,20)+", ";
                         }
                     })
                     string = string.substring(0,50) + "...";

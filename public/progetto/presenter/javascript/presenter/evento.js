@@ -67,6 +67,11 @@ createmp.onclick = async () => {
             immagine: url,
           });
     }else{
-
+        dataOraScadenza.classList.add("border-danger");
+        tipologia.classList.add("border-danger");
+        titolo.classList.add("border-danger");
+        descrizione.classList.add("border-danger");
+        posizione.classList.add("border-danger");
+        immagine.classList.add("border-danger");
     }
 }
