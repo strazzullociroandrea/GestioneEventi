@@ -1,10 +1,11 @@
+import {fetchResetPassword} from "../dataAccess/resetPassword.js";
+
 const email = document.getElementById('email');
 const reset = document.getElementById('reset');
 const resetPassword = document.getElementById('resetPassword');
 const divAlert = document.getElementById('alert');
 const testoAlert = document.getElementById('testoAlert');
 const spinner = document.getElementById("spinner");
-
 
 
 resetPassword.onclick = () => {
@@ -15,7 +16,6 @@ resetPassword.onclick = () => {
         };
         fetchResetPassword(dict)
         .then((response) => {
-            //console.log(response);
             if (response === true)  {
                 window.location.href = './login.html';
             } else {
