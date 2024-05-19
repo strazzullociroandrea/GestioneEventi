@@ -673,29 +673,39 @@ function generateRandomString(iLen) {
   });
 
   const queryGetOtherUsers = async (userId, eventId) => {
-    const sqlInvited = `SELECT idUser FROM invitare WHERE idEvento = ?`;
-    const invited = await connectionToDB.executeQuery(sqlInvited, [eventId]);
-    //console.log("invited", invited);
-
-    let invitedSQL = "(";
-    invited.forEach((inv) => {
-      invitedSQL += inv.idUser + ",";
-    });
-    invitedSQL = invitedSQL.slice(0, -1);
-    invitedSQL += ") ";
-
-    let sql = `SELECT id,username FROM user WHERE id <> ? `;
-
-    if (invited.length > 0) {
-      sql += ` AND NOT id IN ` + invitedSQL;
+    try {
+      const sql = "SELECT id, username FROM user WHERE id <> ? ";
+      const resultGenerali = await connectionToDB.executeQuery(sql, [userId]);
+      const giaInvitati = "SELECT idUser FROM invitare WHERE idEvento = ?";
+      const resultInvitati = await connectionToDB.executeQuery(giaInvitati, [eventId.split("-")[1]]);
+      const invitabili = [];
+      for(let i=0;i<resultGenerali.length;i++){
+        let trovato = false;
+        for(let j=0;j<resultInvitati.length;j++){
+          if(resultGenerali[i].id == resultInvitati[j].idUser && !trovato){
+            trovato = true;
+          }
+        }
+        if(!trovato){
+          invitabili.push(resultGenerali[i]);
+        }
+      }
+      return invitabili;
+    } catch (error) {
+      console.error('Error fetching uninvited users:', error);
+      throw error;
     }
-    return connectionToDB.executeQuery(sql, [userId]);
   };
 
   app.get("/getOtherUsers", async (req, res) => {
-    const { userId } = req.query;
-    let results = await queryGetOtherUsers(userId);
-    res.json(results);
+    const { userId, eventId } = req.query;
+    if(userId && eventId){
+      let results = await queryGetOtherUsers(userId, eventId);
+      const query = "SELECT u.id, u.username FROM user u LEFT JOIN (SELECT idUser FROM invitare WHERE idEvento = ?) i ON u.id = i.idUser WHERE i.idUser IS NULL;";
+      //const rs = await connectionToDB.executeQuery(query, [eventId]);
+      res.json( results);
+    }
+    
   });
   //da fare i lcontrollo invito doppio / invito rifiutato
 app.post("/invitaUtenti", async (req, res) => {
