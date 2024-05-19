@@ -119,7 +119,7 @@ function generateRandomString(iLen) {
   };
 
   const queryGetAllUserEvents = (email) => {
-    const sql = `SELECT evento.*, user.username FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
+    const sql = `SELECT evento.*, user.username AS proprietario FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
     return connectionToDB.executeQuery(sql);
   };
   const queryEventiInvitati = (email) => {
@@ -278,21 +278,30 @@ function generateRandomString(iLen) {
         io.to(socket.id).emit("rifiutaInvitoRes", e);
       }
     });
+    const proprietario = (json2) =>{
+      return new Promise(async (resolve, reject)=>{
+        const promises = json2.map(async (json2Mini) => {
+          const { id } = json2Mini;
+          const proprietario = await connectionToDB.executeQuery(
+            "SELECT username FROM user INNER JOIN evento ON user.id = evento.idUser WHERE evento.id = ?",
+            [id]
+          );
+          json2Mini['proprietario'] = proprietario[0].username;
+          return json2Mini;
+        });
+        const jsonFIn = await Promise.all(promises);
+        resolve(jsonFIn);
+      })
+    }
     socket.on("getAllUserEvents", async (email) => {
       try {
         if (email !== "") {
-          queryGetAllUserEvents(email)
-            .then((json) => {
-              queryEventiInvitati(email).then((json2) => {
-                io.to(socket.id).emit("getResult", {
-                  result: [...json, ...json2],
-                });
-              });
-            })
-            .catch((error) => {
-              ////console.log(error);
-              io.to(socket.id).emit("getResult", { result: [] });
-            });
+          const json = await queryGetAllUserEvents(email);
+          const json2 = await queryEventiInvitati(email);
+          const prop = await proprietario(json2);
+          io.to(socket.id).emit("getResult", {
+            result: [...json, ...prop],
+          });
         }
       } catch (e) {
         io.to(socket.id).emit("getResult", { result: e });
