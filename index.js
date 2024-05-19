@@ -24,9 +24,7 @@ const upload = multer({
   allowUploadBuffering: true, // Abilita il buffering del file
 });
 const saltRounds = 10;
-//mancano i controlli sicurezza e inviti in tempo reale tramite notifica, manca la possibilità di eliminare un evento solo se si è il proprietario ed anche di contrassegnarlo come completato
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
-//conrtollare dati nn vuoti altrimenti restituisce un messaggio di errore?
 app.use(
   bodyParser.urlencoded({
     extended: true,
@@ -173,15 +171,15 @@ function generateRandomString(iLen) {
         io.to(socket.id).emit("loginSucc", e);
       }
     });
-    socket.on("getEvento", async (idEvento) => {
+    socket.on("getEvento", async (idEvento, emailUtente) => {
       //bisogna conrtollare che chi lo vuole vedere sia un invitato o il proprietario altrimenti restituisce un arrya vuoto
       try {
-        //bisogna prendere anche gli inviti solo se sono accettati -> fatto ?
         const rsp = await connectionToDB.executeQuery(
-          "SELECT * FROM evento WHERE id=?",
-          [idEvento]
+          "SELECT * FROM evento WHERE id=? AND (evento.idUser = (SELECT id FROM user WHERE username = ?) OR evento.id IN (SELECT idEvento FROM invitare WHERE idUser = (SELECT id FROM user WHERE username = ?)))",
+          [idEvento, emailUtente, emailUtente]
         );
-        io.to(socket.id).emit("resultGetEvento", { result: rsp });
+
+        io.to(socket.id).emit("resultGetEvento", { result: rsp || [] });
       } catch (e) {
         io.to(socket.id).emit("resultGetEvento", { result: e });
       }
@@ -261,10 +259,10 @@ function generateRandomString(iLen) {
           emailer.send(
             conf,
             evento[0].username,
-            "Invito accettato",
+            "Invito non accettato",
             "Ciao <strong>" +
             evento[0].username +
-            "</strong>. <br>L'utente <strong>" + partecipante[0].username + "</strong> ha accettato il tuo invito."
+            "</strong>. <br>L'utente <strong>" + partecipante[0].username + "</strong> non ha accettato il tuo invito."
           );
           io.to(socket.id).emit("rifiutaInvitoRes", true);
         } else {
@@ -274,8 +272,8 @@ function generateRandomString(iLen) {
         io.to(socket.id).emit("rifiutaInvitoRes", e);
       }
     });
-    const proprietario = (json2) =>{
-      return new Promise(async (resolve, reject)=>{
+    const proprietario = (json2) => {
+      return new Promise(async (resolve, reject) => {
         const promises = json2.map(async (json2Mini) => {
           const { id } = json2Mini;
           const proprietario = await connectionToDB.executeQuery(
@@ -301,61 +299,6 @@ function generateRandomString(iLen) {
         }
       } catch (e) {
         io.to(socket.id).emit("getResult", { result: e });
-      }
-    });
-    //manca la possibilità di cambiare/aggiungere immagini e gli invitati -> usata?
-    socket.on("updateEvento", async (dizionario) => {
-      try {
-        const {
-          id,
-          dataOraScadenza,
-          tipologia,
-          stato,
-          titolo,
-          descrizione,
-          posizione,
-        } = dizionario;
-        if (id != "") {
-          let query = "UPDATE evento SET ";
-          const array = [];
-          if (dataOraScadenza != "") {
-            query += " dataOraScadenza = ?";
-            array.push(dataOraScadenza);
-          }
-          if (tipologia != "") {
-            query += " tipologia = ?";
-            array.push(tipologia);
-          }
-          if (stato != "") {
-            query += " stato = ?";
-            array.push(stato);
-          }
-          if (titolo != "") {
-            query += " titolo = ?";
-            array.push(titolo);
-          }
-          if (descrizione != "") {
-            query += " descrizione = ?";
-            array.push(descrizione);
-          }
-          if (posizione != "") {
-            query += " posizione = ?";
-            array.push(posizione);
-          }
-          query += "WHERE id=? SET";
-          if (array.length > 0) {
-            const rsp = await connectionToDB.executeQuery(query, array);
-            io.to(socket.id).emit("resultUpdateEvento", { result: rsp });
-          } else {
-            io.to(socket.id).emit("resultUpdateEvento", { result: false });
-          }
-        } else {
-          io.to(socket.id).emit("resultUpdateEvento", {
-            result: "Id evento non settato",
-          });
-        }
-      } catch (e) {
-        io.to(socket.id).emit("resultUpdateEvento", { result: e });
       }
     });
     //servizio per inserire un evento
@@ -434,7 +377,6 @@ function generateRandomString(iLen) {
                 .catch((error) => {
                   res.json({ result: "errore nell'eliminazione dell'invito: " + error });
                 });
-
             }
           })
           .catch((error) => {
@@ -471,7 +413,6 @@ function generateRandomString(iLen) {
         });
         errors = true;
       }
-
       // Controllo che l'email non sia già stata registrata
       const query = `SELECT * FROM user WHERE username=?`;
       if (!errors) {
@@ -496,17 +437,15 @@ function generateRandomString(iLen) {
                     "</strong>. <br>Grazie per esserti registrato.<br>La tua password è:" +
                     password
                   );
-
                   res.json({ result: "ok" });
                 })
-                .catch((err) => { }) //console.error(err.message));
+                .catch((err) => { })
             });
           }
         });
       }
     } catch (e) {
       res.json({ result: "Registrazione fallita" });
-
     }
   });
   app.post("/download", async (req, res) => {
@@ -515,7 +454,6 @@ function generateRandomString(iLen) {
       const file = File.fromURL(link); // Ottieni il file da Mega utilizzando l'URL fornito
       await file.loadAttributes(); // Carica gli attributi del file
       const buffer = await file.downloadBuffer(); // Scarica il file come buffer
-
       res.setHeader("Content-Type", file.type); // Imposta il tipo di contenuto sulla base del tipo di file
       res.setHeader(
         "Content-Disposition",
@@ -523,7 +461,6 @@ function generateRandomString(iLen) {
       ); // Imposta l'header per il download del file
       res.send(buffer); // Invia il buffer come risposta al client
     } catch (error) {
-      //console.error(error);
       res.status(500).send("Errore del server");
     }
   });
@@ -592,10 +529,9 @@ function generateRandomString(iLen) {
                   "Password reimpostata",
                   "La tua nuova password è " + new_password
                 );
-
                 res.json(true);
               })
-              .catch((err) => { })//console.error(err.message));
+              .catch((err) => { })
           });
         } else {
           // email non presente
@@ -627,24 +563,37 @@ function generateRandomString(iLen) {
     }
   });
   app.post("/getEvento", async (req, res) => {
-    //bisogna conrtollare che chi lo vuole vedere sia un invitato o il proprietario altrimenti restituisce un arrya vuoto
     try {
       const idEvento = req.body.idEvento;
-      const email = req.body.email;
-      //bisogna prendere anche gli inviti solo se sono accettati
-      const rsp1 = await connectionToDB.executeQuery(
-        "SELECT * FROM evento WHERE id=?",
-        [idEvento]
-      );
-      //di questo evento prendo gli invitati
-      const invitatiSql = `SELECT user.username FROM user INNER JOIN invitare ON user.id = invitare.idUser WHERE invitare.idEvento = ?`;
-      const rsp2 = await connectionToDB.executeQuery(invitatiSql, [idEvento]);
-      rsp1[0]["invitati"] = rsp2;
-      res.json({ result: rsp1 });
-    } catch (e) {
-      res.json({ result: e });
+      const emailUtente = req.body.email;
+      //verifico che chi lo vuole vedere è il proprietario o un invitato
+      const query = `
+            SELECT evento.*, user.username
+            FROM evento
+            INNER JOIN user ON evento.idUser = user.id
+            WHERE evento.id=? 
+            AND (evento.idUser = (SELECT id FROM user WHERE username = ?) 
+            OR evento.id IN (SELECT idEvento FROM invitare WHERE idUser = (SELECT id FROM user WHERE username = ?) AND stato = 'Accettato'))
+        `;
+      const rsp = await connectionToDB.executeQuery(query, [idEvento, emailUtente, emailUtente]);
+      if (rsp && rsp.length > 0) {
+        const invitatiSql = `
+          SELECT user.username 
+          FROM user 
+          INNER JOIN invitare ON user.id = invitare.idUser 
+          WHERE invitare.idEvento = ?;
+        `;
+        const rsp2 = await connectionToDB.executeQuery(invitatiSql, [idEvento]);
+        rsp[0]["invitati"] = rsp2;
+        res.json({ result: rsp });
+      }else{
+        res.json({ result:  [] });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Errore durante l'esecuzione della richiesta." });
     }
   });
+
   app.post("/deleteAccount", async (req, res) => {
     const { username } = req.body;
     if (username && username != "") {
@@ -670,14 +619,14 @@ function generateRandomString(iLen) {
       const giaInvitati = "SELECT idUser FROM invitare WHERE idEvento = ? AND stato <> 'Non accettato'";
       const resultInvitati = await connectionToDB.executeQuery(giaInvitati, [eventId.split("-")[1]]);
       const invitabili = [];
-      for(let i=0;i<resultGenerali.length;i++){
+      for (let i = 0; i < resultGenerali.length; i++) {
         let trovato = false;
-        for(let j=0;j<resultInvitati.length;j++){
-          if(resultGenerali[i].id == resultInvitati[j].idUser && !trovato){
+        for (let j = 0; j < resultInvitati.length; j++) {
+          if (resultGenerali[i].id == resultInvitati[j].idUser && !trovato) {
             trovato = true;
           }
         }
-        if(!trovato){
+        if (!trovato) {
           invitabili.push(resultGenerali[i]);
         }
       }
@@ -690,16 +639,13 @@ function generateRandomString(iLen) {
 
   app.get("/getOtherUsers", async (req, res) => {
     const { userId, eventId } = req.query;
-    if(userId && eventId){
+    if (userId && eventId) {
       let results = await queryGetOtherUsers(userId, eventId);
-      const query = "SELECT u.id, u.username FROM user u LEFT JOIN (SELECT idUser FROM invitare WHERE idEvento = ?) i ON u.id = i.idUser WHERE i.idUser IS NULL;";
-      //const rs = await connectionToDB.executeQuery(query, [eventId]);
-      res.json( results);
+      res.json(results);
     }
-    
+
   });
-  //da fare i lcontrollo invito doppio / invito rifiutato
-app.post("/invitaUtenti", async (req, res) => {
+  app.post("/invitaUtenti", async (req, res) => {
     const { userIds, eventId, emailCorrente } = req.body;
     try {
       const queryVerifica = "SELECT username FROM user INNER JOIN evento ON user.id = evento.idUser WHERE evento.id = ?";
@@ -717,23 +663,18 @@ app.post("/invitaUtenti", async (req, res) => {
           return results.map(result => result[0].username);
         };
         const arrayUsername = await recuperaUsernames(userIds);
-
         const sqlEvento = "SELECT * FROM evento WHERE id = ?";
         const rsp = await connectionToDB.executeQuery(sqlEvento, [eventId.split("-")[1]]);
-
         if (rsp.length === 0) {
           return res.status(404).json({ error: "Evento non trovato" });
         }
-
         // Notifica gli invitati
         await invita(arrayUsername, rsp[0], 'invitato');
-
         // Inserisce gli inviti
         let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
         sql += userIds.map(userId => `('Da Accettare', ${eventId.split("-")[1]}, ${userId})`).join(",") + ";";
         // Esegue la query per inserire gli inviti
         await connectionToDB.executeQuery(sql);
-
         res.status(200).json({ message: "Utenti invitati con successo" });
       } else {
         res.status(404).json({ message: "L'utente non è il proprietario dell'invito o l'evento non esiste" });
