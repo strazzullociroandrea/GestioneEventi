@@ -38,15 +38,41 @@ socket.on("insertSuccess", (response) => {
         posizione.value =
         immagine.value =
           "";
-        window.location.href = "./home.js";
+        window.location.href = "./home.html";
     }
     spinner.classList.add("d-none");
 });
 
+const checkFields=()=>{
+    if(titolo.value==""){
+        alert("Manca il titolo");
+        return false;
+    }
+    if(tipologia.value==""){
+        alert("Manca la tipologia");
+        return false;
+    }
+    if(posizione.value==""){
+        alert("Manca la posizione");
+        return false;
+    }
+    if(dataOraScadenza.value==""){
+        alert("Manca la data di scadenza");
+        return false;
+    }
+    if(descrizione.value==""){
+        alert("Manca la descrizione");
+        return false;
+    }
+
+    return true;
+}
+
 createmp.onclick = async () => {
-    if(dataOraScadenza.value != "" && tipologia.value != "" && titolo.value != "" && 
-    descrizione.value != "" && posizione.value != "" && immagine.files[0]
-    ){
+    if (!checkFields()){
+        return;
+    }
+    else{
         spinner.classList.remove("d-none");
         dataOraScadenza.classList.remove("border-danger");
         tipologia.classList.remove("border-danger");
@@ -77,13 +103,5 @@ createmp.onclick = async () => {
             posizione.classList.add("border-danger");
             immagine.classList.add("border-danger");
         }
-    }else{
-        dataOraScadenza.classList.add("border-danger");
-        tipologia.classList.add("border-danger");
-        titolo.classList.add("border-danger");
-        descrizione.classList.add("border-danger");
-        posizione.classList.add("border-danger");
-        immagine.classList.add("border-danger");
     }
-    
 }
