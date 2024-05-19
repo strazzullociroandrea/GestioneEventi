@@ -379,62 +379,69 @@ function generateRandomString(iLen) {
     });
   });
 
-  //da trasformare in socket ed inviare la notifica ai client che quando la ricevono rifanno il render della pagina
-  app.post("/deleteEvento", (req, res) => {
-    const { event, emailCorrente } = req.body;
+  app.post("/deleteEvento", async (req, res) => {
+    const event = req.body.event;
     if (event.idEvento !== "" && event.idUtente !== "") {
-      queryUtentiInvitati(event.idEvento)
-        .then((result) => {
-          const array = [];
-          result.forEach((e) => {
-            array.push(e.username);
-          });
-          if (!array.includes(emailCorrente)) {
-            invita(array, event.idEvento, "eliminaRes")
-              .then(() => {
-                queryGetUserIdOfEvent(event.idEvento)
-                  .then((json) => {
-                    if (json[0].idUser == event.idUtente) {
-                      queryDeleteEvento(event)
-                        .then(() => {
-                          res.json({ result: "ok" });
-                        })
-                        .catch((error) => {
-                          res.json({ result: "errore nella delete: " + error });
-                        });
-                    }
-                  })
-                  .catch((error) => {
-                    res.json({
-                      result:
-                        "errore nella select del proprietario dell'evento: " +
-                        error,
+      const selectUser = await connectionToDB.executeQuery(
+        "SELECT * FROM evento WHERE id=?",
+        [event.idEvento]
+      );
+      if (event.idUtente == selectUser[0].idUser) { //controllo che l'utente sia il proprietario dell'evento
+        queryUtentiInvitati(event.idEvento)
+          .then((result) => {
+            const array = [];
+            result.forEach((e) => {
+              array.push(e.username);
+            });
+            if (!array.includes(emailCorrente)) {
+              invita(array, event.idEvento, "eliminaRes")
+                .then(() => {
+                  queryGetUserIdOfEvent(event.idEvento)
+                    .then((json) => {
+                      if (json[0].idUser == event.idUtente) {
+                        queryDeleteEvento(event)
+                          .then(() => {
+                            res.json({ result: "ok" });
+                          })
+                          .catch((error) => {
+                            res.json({ result: "errore nella delete: " + error });
+                          });
+                      }
+                    })
+                    .catch((error) => {
+                      res.json({
+                        result:
+                          "errore nella select del proprietario dell'evento: " +
+                          error,
+                      });
                     });
-                  });
-              })
-              .catch((error) => {
-                res.json({ result: "errore nella funzione invita: " + error });
-              });
-          } else {
-            // Elimina solo l'invito
-            const query = "DELETE FROM invitare WHERE idUser IN (SELECT id FROM user WHERE username = ?)";
-            connectionToDB.executeQuery(query, [emailCorrente])
-              .then(() => {
-                //console.log("Invito eliminato");
-                res.json({ result: "OK" });
-              })
-              .catch((error) => {
-                res.json({ result: "errore nell'eliminazione dell'invito: " + error });
-              });
+                })
+                .catch((error) => {
+                  res.json({ result: "errore nella funzione invita: " + error });
+                });
+            } else {
+              // Elimina solo l'invito
+              const query = "DELETE FROM invitare WHERE idUser IN (SELECT id FROM user WHERE username = ?)";
+              connectionToDB.executeQuery(query, [emailCorrente])
+                .then(() => {
+                  //console.log("Invito eliminato");
+                  res.json({ result: "OK" });
+                })
+                .catch((error) => {
+                  res.json({ result: "errore nell'eliminazione dell'invito: " + error });
+                });
 
-          }
-        })
-        .catch((error) => {
-          res.json({
-            result:
-              "errore nelle select degli utenti invitati all'evento: " + error,
+            }
+          })
+          .catch((error) => {
+            res.json({
+              result:
+                "errore nelle select degli utenti invitati all'evento: " + error,
+            });
           });
-        });
+      } else {
+        res.json({ result: "L'utente non ha il permesso di eliminare l'evento" });
+      }
     } else {
       res.json({ result: "attributi non valorizzati" });
     }
