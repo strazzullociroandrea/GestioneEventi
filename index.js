@@ -200,7 +200,7 @@ function generateRandomString(iLen) {
           await Promise.all(
             titoli.map(async (titolo) => {
               const sqlProprietario =
-                "SELECT user.username FROM user INNER JOIN evento ON evento.idUser = user.id";
+                "SELECT user.username FROM user INNER JOIN evento ON evento.idUser = user.id WHERE titolo = ?";
               const username = await connectionToDB.executeQuery(
                 sqlProprietario,
                 [titolo.titolo]
