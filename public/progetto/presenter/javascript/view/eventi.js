@@ -12,7 +12,6 @@ export const render = (result) => {
     for (let i = 0; i < result.length; i += 3) {
       html += '<div class="row">';
       for (let j = i; j < Math.min(i + 3, result.length); j++) {
-        console.log(result[j]);
         html +="<div class='col-4 '>";
         html += templateEvento
           .replace("%TITOLO", result[j].titolo)

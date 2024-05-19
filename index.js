@@ -49,13 +49,10 @@ const invita = (array, evento, ev) => {
   return new Promise((resolve, reject) => {
     const eventiSospesi = [];
     array.forEach((utente) => {
-      ////console.log(utente);
       const associazione = associazioni.find((element) => {
         return element?.email == utente;
       });
       if (associazione && associazione != null) {
-        console.log("Sto facendo l'evento:");
-        console.log(evento);
         io.to(associazione.socket).emit(ev, {
           message: "Sei stato invitato ad un nuovo evento",
           evento,
@@ -205,7 +202,6 @@ function generateRandomString(iLen) {
                 sqlProprietario,
                 [titolo.titolo]
               );
-              console.log(username);
               final.push({
                 titolo: titolo.titolo,
                 proprietario: username[0].username,
@@ -433,7 +429,6 @@ function generateRandomString(iLen) {
               const query = "DELETE FROM invitare WHERE idUser IN (SELECT id FROM user WHERE username = ?)";
               connectionToDB.executeQuery(query, [emailCorrente])
                 .then(() => {
-                  //console.log("Invito eliminato");
                   res.json({ result: "OK" });
                 })
                 .catch((error) => {
@@ -541,16 +536,13 @@ function generateRandomString(iLen) {
           fileName,
           file.buffer
         );
-        console.log("File caricato con successo. Path: ", fileName);
         res.json({ result: true, link });
       } else {
-        console.log("File caricato con successo. Path: NESSUNO ");
         res.json({
           result: false,
         });
       }
     } catch (e) {
-      console.log(e);
       res.json({
         result: false,
       });
@@ -611,7 +603,6 @@ function generateRandomString(iLen) {
         }
       });
     } catch (e) {
-      ////console.log(e);
     }
   });
   app.post("/changePassword", async (req, res) => {
@@ -676,7 +667,7 @@ function generateRandomString(iLen) {
     try {
       const sql = "SELECT id, username FROM user WHERE id <> ? ";
       const resultGenerali = await connectionToDB.executeQuery(sql, [userId]);
-      const giaInvitati = "SELECT idUser FROM invitare WHERE idEvento = ?";
+      const giaInvitati = "SELECT idUser FROM invitare WHERE idEvento = ? AND stato <> 'Non accettato'";
       const resultInvitati = await connectionToDB.executeQuery(giaInvitati, [eventId.split("-")[1]]);
       const invitabili = [];
       for(let i=0;i<resultGenerali.length;i++){
@@ -715,7 +706,6 @@ app.post("/invitaUtenti", async (req, res) => {
       const rspp = await connectionToDB.executeQuery(queryVerifica, [eventId.split("-")[1]]);
       if (rspp.length > 0 && rspp[0].username && rspp[0].username === emailCorrente) {
         if (!Array.isArray(userIds) || userIds.length === 0) {
-          console.log("marameo");
           return res.status(400).json({ error: "userIds deve essere un array non vuoto" });
         }
         const recupraUsername = "SELECT username FROM user WHERE id = ?";
@@ -732,7 +722,6 @@ app.post("/invitaUtenti", async (req, res) => {
         const rsp = await connectionToDB.executeQuery(sqlEvento, [eventId.split("-")[1]]);
 
         if (rsp.length === 0) {
-          console.log("Non è stato trovato nessun evento");
           return res.status(404).json({ error: "Evento non trovato" });
         }
 

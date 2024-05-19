@@ -51,7 +51,6 @@ socket.on("invitato", (response) => {
         message: "Sei stato invitato ad un nuovo evento",
         timeout: 10000,
         onclick: function () {
-            console.log("Notification clicked, redirecting...");
             window.location.href = "./inviti.html";
         },
     });

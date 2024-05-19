@@ -15,7 +15,6 @@ window.onload = () => {
     method: "GET",
   }).then((res) => {
     res.json().then((results) => {
-      console.log(results);
       users = results;
       render();
       spinner.classList.add("d-none");
@@ -23,7 +22,6 @@ window.onload = () => {
   });
 };
 
-console.log("idUser", userId);
 
 buttonInvita.onclick = () => {
   let selected = [];
@@ -39,7 +37,6 @@ buttonInvita.onclick = () => {
     id = item.split("-");
     users.push(id[1]);
   });
-  console.log("invita", selected, eventId);
   fetch("/invitaUtenti", {
     method: "POST",
     headers: {
@@ -72,7 +69,6 @@ fetch("/getOtherUsers?userId=" + userId, {
   method: "GET",
 }).then((res) => {
   res.json().then((results) => {
-    console.log(results);
     users = results;
     render();
   });
@@ -82,7 +78,6 @@ fetch("/getOtherUsers?userId=" + userId, {
   method: "GET",
 }).then((res) => {
   res.json().then((results) => {
-    console.log(results);
     users = results;
     render();
   });
