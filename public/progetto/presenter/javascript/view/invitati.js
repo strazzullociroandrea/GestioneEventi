@@ -6,11 +6,11 @@ export const render = (users) => {
       html +=
         "<tr><td ><input type='checkbox' id='user-" +
         user.id +
-        "'> <label for='user-" +
+        "'> <td " +
         user.id +
-        "'>" +
+        ">" +
         user.username +
-        "</label></td></tr>";
+        "</td></td></tr>";
     });
     tableUsers.innerHTML = html;
   };
