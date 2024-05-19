@@ -8,8 +8,6 @@ import path from "path";
 import bodyParser from "body-parser";
 import fs from "fs";
 const conf = JSON.parse(fs.readFileSync("conf.json"));
-import { fileURLToPath } from "url";
-import { dirname } from "path";
 import multer from "multer";
 import db from "./server/db.js";
 import emailer from "./server/email.js";
@@ -56,6 +54,8 @@ const invita = (array, evento, ev) => {
         return element?.email == utente;
       });
       if (associazione && associazione != null) {
+        console.log("Sto facendo l'evento:");
+        console.log(evento);
         io.to(associazione.socket).emit(ev, {
           message: "Sei stato invitato ad un nuovo evento",
           evento,
@@ -205,6 +205,7 @@ function generateRandomString(iLen) {
                 sqlProprietario,
                 [titolo.titolo]
               );
+              console.log(username);
               final.push({
                 titolo: titolo.titolo,
                 proprietario: username[0].username,
@@ -681,52 +682,52 @@ function generateRandomString(iLen) {
     res.json(results);
   });
   //da fare i lcontrollo invito doppio / invito rifiutato
-  app.post("/invitaUtenti", async (req, res) => {
+app.post("/invitaUtenti", async (req, res) => {
     const { userIds, eventId, emailCorrente } = req.body;
     try {
-        const queryVerifica = "SELECT username FROM user INNER JOIN evento ON user.id = evento.idUser WHERE evento.id = ?";
-        const rspp = await connectionToDB.executeQuery(queryVerifica, [eventId]);
-        if (rspp.length > 0 && rspp[0].username && rspp[0].username === emailCorrente) {
-            if (!Array.isArray(userIds) || userIds.length === 0) {
-                return res.status(400).json({ error: "userIds deve essere un array non vuoto" });
-            }
-            const recupraUsername = "SELECT username FROM user WHERE id = ?";
-            const recuperaUsernames = async (userIds) => {
-                const promises = userIds.map(userId =>
-                    connectionToDB.executeQuery(recupraUsername, [userId])
-                );
-                const results = await Promise.all(promises);
-                return results.map(result => result[0].username);
-            };
-            const arrayUsername = await recuperaUsernames(userIds);
-
-            const sqlEvento = "SELECT * FROM evento WHERE id = ?";
-            const rsp = await connectionToDB.executeQuery(sqlEvento, [eventId]);
-
-            if (rsp.length === 0) {
-                return res.status(404).json({ error: "Evento non trovato" });
-            }
-
-            // Notifica gli invitati
-            await invita(arrayUsername, rsp[0], 'invitato');
-
-            // Inserisce gli inviti
-            let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
-            sql += userIds.map(userId => `('Da Accettare', ${eventId}, ${userId})`).join(",") + ";";
-
-            // Esegue la query per inserire gli inviti
-            await connectionToDB.executeQuery(sql);
-
-            res.status(200).json({ message: "Utenti invitati con successo" });
-        } else {
-            res.status(404).json({ message: "L'utente non è il proprietario dell'invito o l'evento non esiste" });
+      const queryVerifica = "SELECT username FROM user INNER JOIN evento ON user.id = evento.idUser WHERE evento.id = ?";
+      const rspp = await connectionToDB.executeQuery(queryVerifica, [eventId.split("-")[1]]);
+      if (rspp.length > 0 && rspp[0].username && rspp[0].username === emailCorrente) {
+        if (!Array.isArray(userIds) || userIds.length === 0) {
+          console.log("marameo");
+          return res.status(400).json({ error: "userIds deve essere un array non vuoto" });
         }
-    } catch (error) {
-        console.error("Errore durante l'invito degli utenti:", error);
-        res.status(500).json({ error: "Errore durante l'invito degli utenti" });
-    }
-});
+        const recupraUsername = "SELECT username FROM user WHERE id = ?";
+        const recuperaUsernames = async (userIds) => {
+          const promises = userIds.map(userId =>
+            connectionToDB.executeQuery(recupraUsername, [userId])
+          );
+          const results = await Promise.all(promises);
+          return results.map(result => result[0].username);
+        };
+        const arrayUsername = await recuperaUsernames(userIds);
 
+        const sqlEvento = "SELECT * FROM evento WHERE id = ?";
+        const rsp = await connectionToDB.executeQuery(sqlEvento, [eventId.split("-")[1]]);
+
+        if (rsp.length === 0) {
+          console.log("Non è stato trovato nessun evento");
+          return res.status(404).json({ error: "Evento non trovato" });
+        }
+
+        // Notifica gli invitati
+        await invita(arrayUsername, rsp[0], 'invitato');
+
+        // Inserisce gli inviti
+        let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
+        sql += userIds.map(userId => `('Da Accettare', ${eventId.split("-")[1]}, ${userId})`).join(",") + ";";
+        // Esegue la query per inserire gli inviti
+        await connectionToDB.executeQuery(sql);
+
+        res.status(200).json({ message: "Utenti invitati con successo" });
+      } else {
+        res.status(404).json({ message: "L'utente non è il proprietario dell'invito o l'evento non esiste" });
+      }
+    } catch (error) {
+      console.error("Errore durante l'invito degli utenti:", error);
+      res.status(500).json({ error: "Errore durante l'invito degli utenti" });
+    }
+  });
   /**
    *Avvio del serever
    */

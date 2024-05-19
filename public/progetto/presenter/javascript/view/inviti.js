@@ -5,6 +5,7 @@ const templateInvito =
 export const render = (response, socket) =>{
     let html = "";
     response?.result.forEach((invito) => {
+      console.log(invito);
       html += templateInvito
         .replace("%TITOLOEVENTO", invito.titolo)
         .replace("%PROPRIETARIO", invito.proprietario)
