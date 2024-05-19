@@ -27,7 +27,7 @@ CREATE TABLE invitare(
     idUser INT NOT NULL,
     FOREIGN KEY (idEvento) REFERENCES evento(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (idUser) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (idEvento, idUser)
+    PRIMARY KEY (stato, idEvento, idUser)
 );
 
 CREATE TABLE immagine(

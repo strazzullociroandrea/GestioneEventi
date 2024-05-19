@@ -222,7 +222,7 @@ function generateRandomString(iLen) {
         const { idEvento, idUser } = dizionario;
         if (idEvento && idEvento != "" && idUser && idUser != "") {
           const sqlUpdate =
-            "UPDATE invitare SET stato = 'Accettato' WHERE idEvento = ? AND idUser = ?";
+            "UPDATE invitare SET stato = 'Accettato' WHERE idEvento = ? AND idUser = ? AND stato = 'Da Accettare' ";
           await connectionToDB.executeQuery(sqlUpdate, [idEvento, idUser]);
           const eventoSql = "SELECT * FROM evento INNER JOIN user ON user.id = evento.idUser WHERE id= ? ";
           const evento = await connectionToDB.executeQuery(eventoSql, [idEvento]);
@@ -329,6 +329,7 @@ function generateRandomString(iLen) {
 
   app.post("/deleteEvento", async (req, res) => {
     const event = req.body.event;
+    const emailCorrente = req.body.emailCorrente;
     if (event.idEvento !== "" && event.idUtente !== "") {
       const selectUser = await connectionToDB.executeQuery(
         "SELECT * FROM evento WHERE id=?",
@@ -352,11 +353,13 @@ function generateRandomString(iLen) {
                             res.json({ result: "ok" });
                           })
                           .catch((error) => {
+                            console.log("errore nella delete: " + error);
                             res.json({ result: "errore nella delete: " + error });
                           });
                       }
                     })
                     .catch((error) => {
+                      console.log("errore nella select del proprietario dell'evento: "+error);
                       res.json({
                         result:
                           "errore nella select del proprietario dell'evento: " +

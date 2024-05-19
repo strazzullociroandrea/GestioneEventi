@@ -13,6 +13,6 @@ export const eliminaEvento = async(id) =>{
           emailCorrente: sessionStorage.getItem("email"),
         }),
       }).then((res) => {
-        location.reload();
-      });
+         location.reload();
+      })
 }
