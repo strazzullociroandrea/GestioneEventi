@@ -9,6 +9,8 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="../css/login-register.css" />
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -55,17 +57,24 @@
     </div>
     <div class="container-fluid">
       <div
-        class="row justify-content-center fixed-top bg bg-light border-bottom shadow"
+        class="row justify-content-end fixed-top bg bg-light border-bottom shadow"
         id="navbar"
       >
-        <div class="col-8 mb-4 mt-2 container-fluid">
+        <div class="col mb-4 mt-2 ms-3 container-fluid text-start">
           <h1>Eventi programmati</h1>
         </div>
-        <div class="col-2 d-flex align-items-center mb-4 mt-2">
-          <button class="btn btn-info" id="profilo">Il tuo profilo</button>
+        <div class="col-auto d-flex align-items-center mb-4 mt-2">
+          <span class="material-symbols-outlined">
+
+<button class="btn btn-outline-info" id="profilo">person</button>
+</span>
+          
         </div>
-        <div class="col-2 d-flex align-items-center mb-4 mt-2">
-          <button class="btn btn-info" id="logout">Logout</button>
+        <div class="col-auto d-flex align-items-center mb-4 mt-2 me-4">
+          <span class="material-symbols-outlined">
+<button class="btn btn-outline-info" id="logout">logout</button>
+</span>
+          
         </div>
       </div>
       <div class=" spazio" id="eventi"></div>
@@ -79,7 +88,7 @@
           <div class="col-auto text-center">
             <input
               type="button"
-              class="btn btn-info"
+              class="btn btn-outline-info"
               id="crea"
               value="Aggiungi nuovo evento"
             />
@@ -87,7 +96,7 @@
           <div class="col-auto">
             <input
               type="button"
-              class="btn btn-info"
+              class="btn btn-outline-info"
               id="inviti"
               value="Vedi inviti"
             />
