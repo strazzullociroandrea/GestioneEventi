@@ -9,6 +9,7 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
   <title>Visualizza evento</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
   <script src="/socket.io/socket.io.js"></script>
   <style>
     .spazio {
@@ -36,14 +37,22 @@
       ></div>
     </div>
   <div class="container-fluid">
-    <div class="row justify-content-center fixed-top bg bg-light border-bottom shadow" id="navbar">
-      <div class="col-8 mb-4 mt-2">
-        <h1>Dettaglio evento</h1>
+    <div
+        class="row justify-content-end fixed-top bg bg-light border-bottom shadow"
+        id="navbar"
+      >
+        <div class="col mb-4 mt-2 ms-3 container-fluid text-start">
+          <h1>Dettaglio evento</h1>
+        </div>
+          
+        <div class="col-auto d-flex align-items-center mb-4 mt-2 me-4">
+          <span class="material-symbols-outlined">
+              
+            <button class="btn btn-outline-info" id="indietro">arrow_back</button>
+          </span>
+        </div>
+        </div>
       </div>
-      <div class="col-2 d-flex align-items-center mb-4 mt-2">
-        <button class="btn btn-info" id="indietro">Indietro</button>
-      </div>
-    </div>
     <div class="row justify-content-center spazio  d-none" id="dettagli"> 
         <div class="col-md-5 m-2" id="evento">
           <!-- Contenuto dell'evento -->

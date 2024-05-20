@@ -3,9 +3,6 @@ import fs from "fs";
 const conf = JSON.parse(fs.readFileSync("conf.json"));
 import emailer from "./server/email.js";
 
-
-
-
 const socket = (io, connectionToDB, associazioni) => {
     const queryInsertEvent = (dict, connectionToDB) => {
         const sql = `INSERT INTO evento 
