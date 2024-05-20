@@ -84,7 +84,9 @@ createmp.onclick = async () => {
         const formData = new FormData();
         formData.append("file", file);
         const url = await getUrl(formData);
+        console.log(url);
         if(url){
+            console.log("SI");
             socket.emit("insertEvento", {
                 dataOraScadenza: dataOraScadenza.value,
                 tipologia: tipologia.value,
