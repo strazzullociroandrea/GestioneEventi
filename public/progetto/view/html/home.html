@@ -41,6 +41,18 @@
         border: 1px solid grey;
         margin-right: 6%;
       }
+      #spinner {
+        position: relative;
+      }
+  
+      #spinner-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: black;
+        font-size: 1.0rem;
+      }
     </style>
   </head>
   <body>
@@ -54,6 +66,7 @@
         role="status"
         style="width: 8rem; height: 8rem"
       ></div>
+      <div id="spinner-text">Caricamento...</div>
     </div>
     <div class="container-fluid">
       <div

@@ -21,6 +21,18 @@
       .spazio {
         margin-top: 150px;
       }
+      #spinner {
+        position: relative;
+      }
+  
+      #spinner-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: black;
+        font-size: 1.0rem;
+      }
     </style>
     <script src="/socket.io/socket.io.js"></script>
   </head>
@@ -35,6 +47,7 @@
         role="status"
         style="width: 8rem; height: 8rem"
       ></div>
+      <div id="spinner-text">Caricamento...</div>
     </div>
     <div
       class="row justify-content-end fixed-top bg bg-light border-bottom shadow"

@@ -11,6 +11,7 @@ const descrizione = document.getElementById("descrizione");
 const dataOraScadenza = document.getElementById("dataOraScadenza");
 const immagine = document.getElementById("immagine");
 const spinner = document.getElementById("spinner");
+const spinnertext = document.getElementById("spinner-text");
 
 window.onload = () => {
     login(socket);
@@ -80,17 +81,17 @@ createmp.onclick = async () => {
         descrizione.classList.remove("border-danger");
         posizione.classList.remove("border-danger");
         immagine.classList.remove("border-danger");
+        spinnertext.innerText = "Carico l'immagine....";
         const file = immagine.files[0];
         const formData = new FormData();
         formData.append("file", file);
         const url = await getUrl(formData);
-        console.log(url);
         if(url){
-            console.log("SI");
+            spinnertext.innerText = "Inserisco l'evento";
             socket.emit("insertEvento", {
                 dataOraScadenza: dataOraScadenza.value,
                 tipologia: tipologia.value,
-                stato: "Creato",//da cambiare
+                stato: "Creato",
                 titolo: titolo.value,
                 descrizione: descrizione.value,
                 posizione: posizione.value,

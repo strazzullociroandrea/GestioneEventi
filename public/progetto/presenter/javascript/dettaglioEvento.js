@@ -28,7 +28,6 @@ socket.on("loginSucc", async(response) => {
                 });
                 rsp = await rsp.json();
                 rsp = rsp.result;
-                console.log(rsp);
                 if(rsp){
                     evento.innerHTML = "<h1 class='m-md-4'>"+rsp[0].titolo+"</h1>";
                     evento.innerHTML += "<p></p><span class='m-md-4'>Data ed ora scadenza: "+rsp[0].dataOraScadenza.replace("T"," alle ")+"</span>";
