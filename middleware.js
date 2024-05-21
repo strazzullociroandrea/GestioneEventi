@@ -10,7 +10,7 @@ import invita from "./invita.js";
 import path from "path";
 
 
-const middelware = (app, connectionToDB, associazioni) => {
+const middelware = (app, connectionToDB, associazioni, io) => {
     /**
  * Genera una nuova password casuale
  */
@@ -59,7 +59,7 @@ const middelware = (app, connectionToDB, associazioni) => {
                             array.push(e.username);
                         });
                         if (!array.includes(emailCorrente)) {
-                            invita(array, event.idEvento, "eliminaRes", associazioni, emailer, conf)
+                            invita(array, event.idEvento, "eliminaRes", associazioni, emailer, conf, io)
                                 .then(() => {
                                     queryGetUserIdOfEvent(event.idEvento, connectionToDB)
                                         .then((json) => {
@@ -389,7 +389,7 @@ const middelware = (app, connectionToDB, associazioni) => {
                     return res.status(404).json({ error: "Evento non trovato" });
                 }
                 // Notifica gli invitati
-                await invita(arrayUsername, rsp[0], 'invitato', associazioni, emailer, conf);
+                await invita(arrayUsername, rsp[0], 'invitato', associazioni, emailer, conf, io);
                 // Inserisce gli inviti
                 let sql = "INSERT INTO invitare (stato, idEvento, idUser) VALUES ";
                 sql += userIds.map(userId => `('Da Accettare', ${eventId.split("-")[1]}, ${userId})`).join(",") + ";";

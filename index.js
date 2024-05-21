@@ -29,7 +29,7 @@ import {fileURLToPath} from "node:url";
     app.use("/", express.static(path.join(__dirname, "public")));
 
     socket(io, connectionToDB, associazioni);
-    middleware(app, connectionToDB, associazioni);
+    middleware(app, connectionToDB, associazioni, io);
     /**
      *Avvio del server
      */

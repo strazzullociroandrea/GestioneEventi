@@ -6,7 +6,7 @@
  * @param {*} ev evento della socket
  * @returns promise
  */
-const invita = (array, evento, ev, associazioni, emailer, conf) => {
+const invita = (array, evento, ev, associazioni, emailer, conf, io) => {
     return new Promise((resolve, reject) => {
         const eventiSospesi = [];
         array.forEach((utente) => {
