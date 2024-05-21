@@ -15,16 +15,15 @@
     .spazio {
       margin-top: 150px;
     }
-    .card{
-      max-width: 25%;
-      height: 35vh;
+    .card {
+      max-width: 35%; /* Aumenta la larghezza */
+      height: 45vh; /* Aumenta l'altezza */
       border: 1px solid grey;
       margin-right: 6%;
     }
     #spinner {
       position: relative;
     }
-
     #spinner-text {
       position: absolute;
       top: 50%;
@@ -32,6 +31,12 @@
       transform: translate(-50%, -50%);
       color: black;
       font-size: 1.0rem;
+    }
+    #immagine {
+      width: 60%; /* Riduci la larghezza */
+      height: auto;
+      margin-top: 10vh;
+      margin-left: 60px;
     }
   </style>
   <link rel="stylesheet" href="../css/login-register.css">
@@ -56,7 +61,7 @@
         id="navbar"
       >
         <div class="col mb-4 mt-2 ms-3 container-fluid text-start">
-          <h1>Dettaglio evento</h1>
+          <h1 id="titolo"></h1>
         </div>
           
         <div class="col-auto d-flex align-items-center mb-4 mt-2 me-4">
@@ -67,13 +72,13 @@
         </div>
         </div>
       </div>
-    <div class="row justify-content-center spazio  d-none" id="dettagli"> 
+    <div class="row justify-content-center spazio d-none" id="dettagli"> 
         <div class="col-md-5 m-2 card h-100 shadow" id="evento" style="background: rgba(255, 255, 255, 0.726)">
           <!-- Contenuto dell'evento -->
         </div>
         <div class="col-md-5 m-2 text-center x">
           <!-- Immagine dell'evento -->
-          <img class="img-fluid shadow" id="immagine" style="width: 80%; height: auto; margin-top: 10vh; margin-left: 60px;" alt="Immagine dell'evento">
+          <img class="img-fluid shadow" id="immagine" alt="Immagine dell'evento">
         </div>
     </div>
   </div>

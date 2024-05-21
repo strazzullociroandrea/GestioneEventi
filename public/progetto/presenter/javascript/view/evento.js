@@ -1,10 +1,12 @@
 import { getEvento } from "../dataAccess/getEvento.js";
 import { recuperaImmagine } from "../dataAccess/recuperaImmagine.js";
+const titolo = document.getElementById("titolo");
 
 export const eventoView = async (idevento) => {
     const evento = await getEvento(idevento);
     if (evento) {
-        evento.innerHTML = "<h1 class='m-md-4'>" + rsp[0].titolo + "</h1>";
+        titolo.innerHTML = rsp[0].titolo;
+      //  evento.innerHTML = "<h1 class='m-md-4'>" + rsp[0].titolo + "</h1>";
         evento.innerHTML += "<p></p><span class='m-md-4'>Data ed ora scadenza: " + rsp[0].dataOraScadenza.replace("T", " alle ") + "</span>";
         evento.innerHTML += "<p></p><span class='m-md-4'>Tipologia: " + rsp[0].tipologia + "</span>";
         evento.innerHTML += "<p></p><span class='m-md-4'>Posizione: " + rsp[0].posizione + "</span>";

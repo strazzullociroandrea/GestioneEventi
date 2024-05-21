@@ -7,6 +7,7 @@ const evento = document.getElementById("evento");
 const immagine =  document.getElementById("immagine");
 const spinner = document.getElementById("spinner");
 const dettagli =  document.getElementById("dettagli");
+const titolo = document.getElementById("titolo");
 
 window.onload = async () => {
     login(socket);
@@ -29,7 +30,9 @@ socket.on("loginSucc", async(response) => {
                 rsp = await rsp.json();
                 rsp = rsp.result;
                 if(rsp){
-                    evento.innerHTML = "<h1 class='m-md-4'>"+rsp[0].titolo+"</h1>";
+                    evento.innerHTML = "";
+                    //evento.innerHTML = "<h1 class='m-md-4'>"+rsp[0].titolo+"</h1>";
+                    titolo.innerText = rsp[0].titolo;
                     evento.innerHTML += "<p></p><span class='m-md-4'>Data ed ora scadenza: "+rsp[0].dataOraScadenza.replace("T"," alle ")+"</span>";
                     evento.innerHTML += "<p></p><span class='m-md-4'>Tipologia: "+rsp[0].tipologia+"</span>";
                     evento.innerHTML += "<p></p><span class='m-md-4'>Posizione: "+rsp[0].posizione+"</span>";
