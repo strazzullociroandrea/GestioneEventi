@@ -28,22 +28,29 @@ socket.on("loginSucc", async(response) => {
                 });
                 rsp = await rsp.json();
                 rsp = rsp.result;
+                console.log(rsp);
                 if(rsp){
-                    evento.innerHTML = "<h1 class='m-md-4'>Titolo: "+rsp[0].titolo+"</h1>";
-                    evento.innerHTML += "<span class='m-md-4'>Descrizione: "+rsp[0].descrizione+"</span>";
-                    evento.innerHTML += "<p></p><span class='m-md-4'>Posizione: "+rsp[0].posizione+"</span>";
+                    evento.innerHTML = "<h1 class='m-md-4'>"+rsp[0].titolo+"</h1>";
+                    evento.innerHTML += "<p></p><span class='m-md-4'>Data ed ora scadenza: "+rsp[0].dataOraScadenza.replace("T"," alle ")+"</span>";
                     evento.innerHTML += "<p></p><span class='m-md-4'>Tipologia: "+rsp[0].tipologia+"</span>";
+                    evento.innerHTML += "<p></p><span class='m-md-4'>Posizione: "+rsp[0].posizione+"</span>";
+                    evento.innerHTML += "<p></p><span class='m-md-4'>Proprietario: "+(rsp[0].username == sessionStorage.getItem("email") ? "Tu": rsp[0].username)+"</span>";
                     //visualizzo gli invitati
-                    let string = "";
+                    let string = ""; 
+                    let tu = false;
                     rsp[0].invitati.forEach(invitato => {
                         if(invitato.username == sessionStorage.getItem("email")){
-                            string += "TU, ";
+                           tu = true;
                         }else{
-                            string += invitato.username.substring(0,20)+", ";
+                            string += invitato.username.split("@")[0]+", ";
                         }
                     })
+                    if(tu){
+                        string = "Tu, " + string;
+                    }
                     string = string.substring(0,50) + "...";
                     evento.innerHTML += "<p></p><span class='m-md-4'>Invitati: "+(string.length > 0 && string != "..." ? string : "Nessuno") +"</span>";
+                    evento.innerHTML += "<p></p><span class='m-md-4'>Descrizione: "+rsp[0].descrizione+"</span>";
                     let rspImg = await fetch("/download", {
                         method: 'POST',
                         headers: {
