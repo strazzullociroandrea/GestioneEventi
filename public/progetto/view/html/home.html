@@ -53,6 +53,12 @@
         color: black;
         font-size: 1.0rem;
       }
+      table {
+        font-size:9px;
+      }
+      table tr,td{
+        padding:0;
+      }
     </style>
   </head>
   <body>
@@ -68,26 +74,39 @@
       ></div>
       <div id="spinner-text">Caricamento...</div>
     </div>
-    <div class="container-fluid">
+    <div class="container-fluid grid ">
       <div
-        class="row justify-content-end fixed-top bg bg-light border-bottom shadow"
+        class=" row justify-content-end fixed-top bg bg-light border-bottom shadow px-3"
         id="navbar"
       >
-        <div class="col mb-4 mt-2 ms-3 container-fluid text-start">
+        <div class="col container-fluid text-start">
           <h1>Eventi programmati</h1>
         </div>
-        <div class="col-auto d-flex align-items-center mb-4 mt-2">
+        <div class="col-auto d-flex align-items-center">
           <span class="material-symbols-outlined">
-
-<button class="btn btn-outline-info" id="profilo">person</button>
-</span>
-          
+            <button class="btn btn-outline-info" id="profilo">person</button>
+          </span>
         </div>
-        <div class="col-auto d-flex align-items-center mb-4 mt-2 me-4">
+        <div class="col-auto d-flex align-items-center ">
           <span class="material-symbols-outlined">
-<button class="btn btn-outline-info" id="logout">logout</button>
-</span>
-          
+            <button class="btn btn-outline-info" id="logout">logout</button>
+          </span>
+          </div>
+          <div class="col-auto text-center  d-flex align-items-center ">
+            <input
+              type="button"
+              class="btn btn-outline-info "
+              id="crea"
+              value="Aggiungi nuovo evento"
+            />
+          </div>
+          <div class="col-auto  d-flex align-items-center ">
+            <input
+              type="button"
+              class="btn btn-outline-info "
+              id="inviti"
+              value="Vedi inviti"
+            />
         </div>
       </div>
       <div class=" spazio" id="eventi"></div>
@@ -98,22 +117,7 @@
           class="d-flex justify-content-between align-items-center"
           style="position: sticky; bottom: 0"
         >
-          <div class="col-auto text-center">
-            <input
-              type="button"
-              class="btn btn-outline-info"
-              id="crea"
-              value="Aggiungi nuovo evento"
-            />
-          </div>
-          <div class="col-auto">
-            <input
-              type="button"
-              class="btn btn-outline-info"
-              id="inviti"
-              value="Vedi inviti"
-            />
-          </div>
+
         </div>
       </div>
     </div>

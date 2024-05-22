@@ -6,22 +6,278 @@ const viewButton = '<button class="btn view-button viewEvento btn-info mx-2" id=
 const inviteButton = '<button class="btn invita-button invitaEvento %BLOCK mx-2" id="invita-%ID" %PROP ><svg height="500px" width="500px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 495.003 495.003" xml:space="preserve"><path id="XMLID_53_" d="M164.711,456.687c0,2.966,1.647,5.686,4.266,7.072c2.617,1.385,5.799,1.207,8.245-0.468l55.09-37.616l-67.6-32.22V456.687z"/><path id="XMLID_52_" d="M492.431,32.443c-1.513-1.395-3.466-2.125-5.44-2.125c-1.19,0-2.377,0.264-3.5,0.816L7.905,264.422c-4.861,2.389-7.937,7.353-7.904,12.783c0.033,5.423,3.161,10.353,8.057,12.689l125.342,59.724l250.62-205.99L164.455,364.414l156.145,74.4c1.918,0.919,4.012,1.376,6.084,1.376c1.768,0,3.519-0.322,5.186-0.977c3.637-1.438,6.527-4.318,7.97-7.956L494.436,41.257C495.66,38.188,494.862,34.679,492.431,32.443z"/></svg></button>';
 
 const templateEvento =
-  '<div class="text-center  relative bg-light shadow-lg m-3 p-3 rounded-4"><div style="z-index:100;"><p>%TITOLO</p><p>%SCADENZA</p> <p>%DESCRIZIONE</p><p>%TIPOLOGIA</p> <p>Evento di %PROPRIETARIO</p><div class="d-flex justify-content-center align-items-center">'+viewButton+inviteButton+deleteButton+'</div></div></div>';
+  `
+        <div class=" bg-light shadow-lg m-3 p-3 rounded-4 col relative viewEvento" id="%ID">
+          <div class="position-relative d-flex flex-column justify-content-between" style="height:300px;">
+            <h1>
+              <div class="bg-secondary-subtle rounded-2" style="width:100px; height:60px; float:left; padding: 3px; margin-right:5px;">
+                <img src="%IMG" class="bg-secundary" id="img-%ID" style="width:100%; height:100%;">
+              </div>
+              %TITOLO
+            </h1>
+            <div class="d-flex justify-content-between h-100">
+              <div class=" h-100 d-flex flex-column" style="width:60%">
+                <div class="w-100 h-100">
+                <div >%DESCRIZIONE</div>
+                </div>
+                <div class="h-25 text-left">%PROPRIETARIO</div>
+              </div>
+              <div class=" h-100"  style="width:40%">
+                <div class="d-flex flex-column h-100">
+                  <div class="h-50">%SCADENZA</div>
+                  <div class="h-25 %CLASSE_TIPOLOGIA">
+                    %TIPOLOGIA
+                  </div>
+
+                    <div class="h-25 d-flex justify-content-center align-items-center">
+                      ` +
+                      inviteButton +
+                      deleteButton +
+                      `
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  `;
+//  '<div class="text-center  relative bg-light shadow-lg m-3 p-3 rounded-4"><div style="z-index:100;"><h1>%TITOLO</h1><p>%SCADENZA</p> <p>%DESCRIZIONE</p><p>%TIPOLOGIA</p> <p>Evento di %PROPRIETARIO</p><div class="d-flex justify-content-center align-items-center">'+viewButton+inviteButton+deleteButton+'</div></div></div>';
 const eventi = document.getElementById("eventi");
+
+
+
+
+function getTime() {
+  // initialize time-related variables with current time settings
+  var now = new Date();
+  var hour = now.getHours();
+  var minute = now.getMinutes();
+  now = null;
+  var ampm = "";
+
+  // validate hour values and set value of ampm
+  if (hour >= 12) {
+    hour -= 12;
+    ampm = "PM";
+  } else ampm = "AM";
+  hour = hour == 0 ? 12 : hour;
+
+  // add zero digit to a one digit minute
+  if (minute < 10) minute = "0" + minute; // do not parse this number!
+
+  // return time string
+  return hour + ":" + minute + " " + ampm;
+}
+
+function leapYear(year) {
+  if (year % 4 == 0)
+    // basic rule
+    return true; // is leap year
+  /* else */ // else not needed when statement is "return"
+  return false; // is not leap year
+}
+
+function getDays(month, year) {
+  // create array to hold number of days in each month
+  var ar = new Array(12);
+  ar[0] = 31; // January
+  ar[1] = leapYear(year) ? 29 : 28; // February
+  ar[2] = 31; // March
+  ar[3] = 30; // April
+  ar[4] = 31; // May
+  ar[5] = 30; // June
+  ar[6] = 31; // July
+  ar[7] = 31; // August
+  ar[8] = 30; // September
+  ar[9] = 31; // October
+  ar[10] = 30; // November
+  ar[11] = 31; // December
+
+  // return number of days in the specified month (parameter)
+  return ar[month];
+}
+
+function getMonthName(month) {
+  // create array to hold name of each month
+  var ar = new Array(12);
+  ar[0] = "January";
+  ar[1] = "February";
+  ar[2] = "March";
+  ar[3] = "April";
+  ar[4] = "May";
+  ar[5] = "June";
+  ar[6] = "July";
+  ar[7] = "August";
+  ar[8] = "September";
+  ar[9] = "October";
+  ar[10] = "November";
+  ar[11] = "December";
+
+  // return name of specified month (parameter)
+  return ar[month];
+}
+
+function setCal() {
+  // standard time attributes
+  var now = new Date();
+  var year = now.getYear();
+  if (year < 1000) year += 1900;
+  var month = now.getMonth();
+  var monthName = getMonthName(month);
+  var date = now.getDate();
+  now = null;
+
+  // create instance of first day of month, and extract the day on which it occurs
+  var firstDayInstance = new Date(year, month, 1);
+  var firstDay = firstDayInstance.getDay();
+  firstDayInstance = null;
+
+  // number of days in current month
+  var days = getDays(month, year);
+
+  // call function to draw calendar
+  drawCal(firstDay + 1, days, date, monthName, year);
+}
+
+const drawCal = (date) => {
+  
+
+    var now = new Date(date);
+    var year = now.getYear();
+    if (year < 1000) year += 1900;
+    var month = now.getMonth();
+    var monthName = getMonthName(month);
+    var date = now.getDate();
+    now = null;
+
+    // create instance of first day of month, and extract the day on which it occurs
+    var firstDayInstance = new Date(year, month, 1);
+    var firstDay = firstDayInstance.getDay();
+    firstDayInstance = null;
+
+    // number of days in current month
+    var lastDate = getDays(month, year);
+
+
+  // constant table settings
+  var headerHeight = 20; // height of the table's header cell
+  var border = 1; // 3D height of table's border
+  var cellspacing = 1; // width of table's border
+  var headerColor = "midnightblue"; // color of table's header
+  var headerSize = "+1"; // size of tables header font
+  var colWidth = 40; // width of columns in table
+  var dayCellHeight = 15; // height of cells containing days of the week
+  var dayColor = "darkblue"; // color of font representing week days
+  var cellHeight = 6; // height of cells representing dates in the calendar
+  var todayColor = "bg-danger text-white rounded-4 text-center"; // color specifying today's date in the calendar
+  var timeColor = "purple"; // color of font representing current time
+
+  // create basic table structure
+  var text = ""; // initialize accumulative variable to empty string
+  text += "<CENTER>";
+  text += "<TABLE BORDER=" + border + " CELLSPACING=" + cellspacing + ">"; // table settings
+  text += "<TH COLSPAN=7 HEIGHT=" + headerHeight + ">"; // create table header cell
+  text += '<FONT COLOR="' + headerColor + '" SIZE=' + headerSize + ">"; // set font for table header
+  text += monthName + " " + year;
+  text += "</FONT>"; // close table header's font settings
+  text += "</TH>"; // close header cell
+
+  // variables to hold constant settings
+  var openCol = "<TD WIDTH=" + colWidth + " HEIGHT=" + dayCellHeight + ">";
+  openCol += '<FONT COLOR="' + dayColor + '">';
+  var closeCol = "</FONT></TD>";
+
+  // create array of abbreviated day names
+  var weekDay = new Array(7);
+  weekDay[0] = "Dom";
+  weekDay[1] = "Lun";
+  weekDay[2] = "Mar";
+  weekDay[3] = "Mer";
+  weekDay[4] = "Gio";
+  weekDay[5] = "Ven";
+  weekDay[6] = "Sab";
+
+  // create first row of table to set column width and specify week day
+  text += '<TR ALIGN="center" VALIGN="center">';
+  for (var dayNum = 0; dayNum < 7; ++dayNum) {
+    text += openCol + weekDay[dayNum] + closeCol;
+  }
+  text += "</TR>";
+
+  // declaration and initialization of two variables to help with tables
+  var digit = 1;
+  var curCell = 1;
+
+  for (var row = 1; row <= Math.ceil((lastDate + firstDay - 1) / 7); ++row) {
+    text += '<TR ALIGN="right" VALIGN="top">';
+    for (var col = 1; col <= 7; ++col) {
+      if (digit > lastDate) break;
+      if (curCell < firstDay) {
+        text += "<TD></TD>";
+        curCell++;
+      } else {
+        if (digit == date) {
+          // current cell represent today's date
+          text += "<TD HEIGHT=" + cellHeight + " class='"+todayColor+"'>";
+          text += digit;
+          text += "</TD>";
+        } else text += "<TD class='text-center' HEIGHT=" + cellHeight + ">" + digit + "</TD>";
+        digit++;
+      }
+    }
+    text += "</TR>";
+  }
+
+  // close all basic table tags
+  text += "</TABLE>";
+  text += "</CENTER>";
+
+  // print accumulative HTML string
+  return text;
+}
+
+
+
 
 export const render = (result) => {
     let html = "";
     for (let i = 0; i < result.length; i += 3) {
       html += '<div class="row">';
       for (let j = i; j < Math.min(i + 3, result.length); j++) {
+        
+        let classeTipologia = ""
+        switch (result[j].tipologia) {
+          case "Sport":
+            classeTipologia = "text-danger";
+            break;
+          case "Scuola":
+            classeTipologia = "text-success";
+            break;
+          case "Musica":
+            classeTipologia = "text-primary";
+            break;
+          case "Divertimento":
+            classeTipologia = "text-warning";
+            break;
+        }
+        let data = new Date(result[j].dataOraScadenza);
+        console.log("data", data.getDate(),data.getMonth(),data.getFullYear())
+        let cal = drawCal(data);
+
         html +="<div class='col-4 '>";
         html += templateEvento
-          .replace("%TITOLO","<b>Titolo:</b>  "+ result[j].titolo)
-          .replace("%SCADENZA", "<b>Scadenza:</b>  "+result[j].dataOraScadenza.replace("T", " "))
-          .replace("%DESCRIZIONE", "<b>Descrizione:</b> "+result[j].descrizione)
-          .replace("%TIPOLOGIA","<b>Tipologia:</b>  "+ result[j].tipologia)
+          .replace("%TITOLO", result[j].titolo)
+          .replace("%SCADENZA", cal)//result[j].dataOraScadenza.replace("T", " ")
+          .replace("%DESCRIZIONE", result[j].descrizione)
+          .replace("%TIPOLOGIA", result[j].tipologia)
+          .replace("%CLASSE_TIPOLOGIA", classeTipologia)
           .replace("%PROPRIETARIO", result[j].proprietario)
-          .replaceAll("%BLOCK", result[j].proprietario == sessionStorage.getItem("email") ? "" : "btn-disabled")
+          .replaceAll(
+            "%BLOCK",
+            result[j].proprietario == sessionStorage.getItem("email")
+              ? ""
+              : "btn-disabled"
+          )
           .replaceAll("%ID", result[j].id)
           .replaceAll("%USERID", result[j].idUser)
           .replace(
@@ -30,7 +286,7 @@ export const render = (result) => {
               ? "disabled"
               : ""
           );
-          html+="</div>";
+        html += "</div>";
       }
       html += "</div>";
     }
@@ -54,5 +310,23 @@ export const render = (result) => {
       };
     });
   
+  for (let i = 0; i < result.length; i += 3) {
+    for (let j = i; j < Math.min(i + 3, result.length); j++) {
+                fetch("/download", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ mega: result[j].immagine }),
+                }).then((res) => {
+                  res.blob().then((rspImg) => {
+                    const url = URL.createObjectURL(rspImg);
+                    const img = document.getElementById("img-" + result[j].id);
+                    img.src = url;
+                    console.log("imposto immagine ", img, url);
+                  });
+                });
+    }
+  }
     spinner.classList.add("d-none");
   };
