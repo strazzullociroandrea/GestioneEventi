@@ -5,7 +5,8 @@ const titolo = document.getElementById("titolo");
 export const eventoView = async (idevento) => {
     const evento = await getEvento(idevento);
     if (evento) {
-        titolo.innerHTML = rsp[0].titolo;
+        //.replace("%TITOLO", result[j].titolo.length > 15 ? result[j].titolo.substring(0,15)+"..." :  result[j].titolo)
+        titolo.innerHTML = result[0].titolo.length > 15 ? result[0].titolo.substring(0,15)+"..." :  result[0].titolo;
       //  evento.innerHTML = "<h1 class='m-md-4'>" + rsp[0].titolo + "</h1>";
         evento.innerHTML += "<p></p><span class='m-md-4'>Data ed ora scadenza: " + rsp[0].dataOraScadenza.replace("T", " alle ") + "</span>";
         evento.innerHTML += "<p></p><span class='m-md-4'>Tipologia: " + rsp[0].tipologia + "</span>";

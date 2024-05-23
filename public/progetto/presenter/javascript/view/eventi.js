@@ -48,12 +48,12 @@ const eventi = document.getElementById("eventi");
 
 
 function getTime() {
-  // initialize time-related variables with current time settings
-  var now = new Date();
-  var hour = now.getHours();
-  var minute = now.getMinutes();
+  // initialize time-related letiables with current time settings
+  let now = new Date();
+  let hour = now.getHours();
+  let minute = now.getMinutes();
   now = null;
-  var ampm = "";
+  let ampm = "";
 
   // validate hour values and set value of ampm
   if (hour >= 12) {
@@ -79,7 +79,7 @@ function leapYear(year) {
 
 function getDays(month, year) {
   // create array to hold number of days in each month
-  var ar = new Array(12);
+  let ar = new Array(12);
   ar[0] = 31; // January
   ar[1] = leapYear(year) ? 29 : 28; // February
   ar[2] = 31; // March
@@ -99,7 +99,7 @@ function getDays(month, year) {
 
 function getMonthName(month) {
   // create array to hold name of each month
-  var ar = new Array(12);
+  let ar = new Array(12);
   ar[0] = "January";
   ar[1] = "February";
   ar[2] = "March";
@@ -119,21 +119,21 @@ function getMonthName(month) {
 
 function setCal() {
   // standard time attributes
-  var now = new Date();
-  var year = now.getYear();
+  let now = new Date();
+  let year = now.getYear();
   if (year < 1000) year += 1900;
-  var month = now.getMonth();
-  var monthName = getMonthName(month);
-  var date = now.getDate();
+  let month = now.getMonth();
+  let monthName = getMonthName(month);
+  let date = now.getDate();
   now = null;
 
   // create instance of first day of month, and extract the day on which it occurs
-  var firstDayInstance = new Date(year, month, 1);
-  var firstDay = firstDayInstance.getDay();
+  let firstDayInstance = new Date(year, month, 1);
+  let firstDay = firstDayInstance.getDay();
   firstDayInstance = null;
 
   // number of days in current month
-  var days = getDays(month, year);
+  let days = getDays(month, year);
 
   // call function to draw calendar
   drawCal(firstDay + 1, days, date, monthName, year);
@@ -142,53 +142,53 @@ function setCal() {
 const drawCal = (date) => {
   
 
-    var now = new Date(date);
-    var year = now.getYear();
+    let now = new Date(date);
+    let year = now.getYear();
     if (year < 1000) year += 1900;
-    var month = now.getMonth();
-    var monthName = getMonthName(month);
-    var date = now.getDate();
+    let month = now.getMonth();
+    let monthName = getMonthName(month);
+    date = now.getDate();
     now = null;
 
     // create instance of first day of month, and extract the day on which it occurs
-    var firstDayInstance = new Date(year, month, 1);
-    var firstDay = firstDayInstance.getDay();
+    let firstDayInstance = new Date(year, month, 1);
+    let firstDay = firstDayInstance.getDay();
     firstDayInstance = null;
 
     // number of days in current month
-    var lastDate = getDays(month, year);
+    let lastDate = getDays(month, year);
 
 
   // constant table settings
-  var headerHeight = 20; // height of the table's header cell
-  var border = 1; // 3D height of table's border
-  var cellspacing = 1; // width of table's border
-  var headerColor = "midnightblue"; // color of table's header
-  var headerSize = "+1"; // size of tables header font
-  var colWidth = 40; // width of columns in table
-  var dayCellHeight = 15; // height of cells containing days of the week
-  var dayColor = "darkblue"; // color of font representing week days
-  var cellHeight = 6; // height of cells representing dates in the calendar
-  var todayColor = "bg-danger text-white rounded-4 text-center"; // color specifying today's date in the calendar
-  var timeColor = "purple"; // color of font representing current time
+  let headerHeight = 20; // height of the table's header cell
+  let border = 1; // 3D height of table's border
+  let cellspacing = 1; // width of table's border
+  let headerColor = "midnightblue"; // color of table's header
+  let headerSize = "+1"; // size of tables header font
+  let colWidth = 40; // width of columns in table
+  let dayCellHeight = 15; // height of cells containing days of the week
+  let dayColor = "darkblue"; // color of font representing week days
+  let cellHeight = 6; // height of cells representing dates in the calendar
+  let todayColor = "bg-danger text-white rounded-4 text-center"; // color specifying today's date in the calendar
+  let timeColor = "purple"; // color of font representing current time
 
   // create basic table structure
-  var text = ""; // initialize accumulative variable to empty string
-  text += "<CENTER>";
-  text += "<TABLE BORDER=" + border + " CELLSPACING=" + cellspacing + ">"; // table settings
-  text += "<TH COLSPAN=7 HEIGHT=" + headerHeight + ">"; // create table header cell
-  text += '<FONT COLOR="' + headerColor + '" SIZE=' + headerSize + ">"; // set font for table header
+  let text = ""; // initialize accumulative letiable to empty string
+  text += "<center>";
+  text += "<table border=" + border + " cellspacing=" + cellspacing + ">"; // table settings
+  text += "<th colspan='7' height=" + headerHeight + ">"; // create table header cell
+  text += '<font color="' + headerColor + '" size=' + headerSize + ">"; // set font for table header
   text += monthName + " " + year;
-  text += "</FONT>"; // close table header's font settings
-  text += "</TH>"; // close header cell
+  text += "</font>"; // close table header's font settings
+  text += "</th>"; // close header cell
 
-  // variables to hold constant settings
-  var openCol = "<TD WIDTH=" + colWidth + " HEIGHT=" + dayCellHeight + ">";
+  // letiables to hold constant settings
+  let openCol = "<TD WIDTH=" + colWidth + " HEIGHT=" + dayCellHeight + ">";
   openCol += '<FONT COLOR="' + dayColor + '">';
-  var closeCol = "</FONT></TD>";
+  let closeCol = "</FONT></TD>";
 
   // create array of abbreviated day names
-  var weekDay = new Array(7);
+  let weekDay = new Array(7);
   weekDay[0] = "Dom";
   weekDay[1] = "Lun";
   weekDay[2] = "Mar";
@@ -199,18 +199,18 @@ const drawCal = (date) => {
 
   // create first row of table to set column width and specify week day
   text += '<TR ALIGN="center" VALIGN="center">';
-  for (var dayNum = 0; dayNum < 7; ++dayNum) {
+  for (let dayNum = 0; dayNum < 7; ++dayNum) {
     text += openCol + weekDay[dayNum] + closeCol;
   }
   text += "</TR>";
 
-  // declaration and initialization of two variables to help with tables
-  var digit = 1;
-  var curCell = 1;
+  // declaration and initialization of two letiables to help with tables
+  let digit = 1;
+  let curCell = 1;
 
-  for (var row = 1; row <= Math.ceil((lastDate + firstDay - 1) / 7); ++row) {
+  for (let row = 1; row <= Math.ceil((lastDate + firstDay - 1) / 7); ++row) {
     text += '<TR ALIGN="right" VALIGN="top">';
-    for (var col = 1; col <= 7; ++col) {
+    for (let col = 1; col <= 7; ++col) {
       if (digit > lastDate) break;
       if (curCell < firstDay) {
         text += "<TD></TD>";
@@ -266,7 +266,7 @@ export const render = (result) => {
 
         html +="<div class='col-4 '>";
         html += templateEvento
-          .replace("%TITOLO", result[j].titolo)
+          .replace("%TITOLO", result[j].titolo.length > 15 ? result[j].titolo.substring(0,15)+"..." :  result[j].titolo)
           .replace("%SCADENZA", cal)//result[j].dataOraScadenza.replace("T", " ")
           .replace("%DESCRIZIONE", result[j].descrizione)
           .replace("%TIPOLOGIA", result[j].tipologia)
@@ -292,22 +292,35 @@ export const render = (result) => {
     }
     eventi.innerHTML = html;
     document.querySelectorAll(".viewEvento").forEach((button) => {
-      button.onclick = () => {
+      /*button.onclick = () => {
         window.location.href = "./dettaglioEvento.html?idEvento=" + button.id;
-      };
+      };*/
+      button.addEventListener('click',(event)=>{
+        event.stopPropagation();
+        window.location.href = "./dettaglioEvento.html?idEvento=" + button.id;
+      })
     });
   
     document.querySelectorAll(".invitaEvento").forEach((button) => {
-      button.onclick = () => {
+      /*button.onclick = () => {
         window.location.href =
           "./invita.html?idEvento=" + button.id + "&idUser=13";
-      };
+      };*/
+      button.addEventListener('click',(event)=>{
+        event.stopPropagation();
+        window.location.href =
+        "./invita.html?idEvento=" + button.id;
+      })
     });
   
     document.querySelectorAll(".deleteEvent").forEach((button) => {
-      button.onclick = () => {
+      /*button.onclick = () => {
         eliminaEvento(button.id)
-      };
+      };*/
+      button.addEventListener('click',(event)=>{
+        event.stopPropagation();
+        eliminaEvento(button.id)
+      })
     });
   
   for (let i = 0; i < result.length; i += 3) {

@@ -32,7 +32,7 @@ socket.on("loginSucc", async(response) => {
                 if(rsp){
                     evento.innerHTML = "";
                     //evento.innerHTML = "<h1 class='m-md-4'>"+rsp[0].titolo+"</h1>";
-                    titolo.innerText = rsp[0].titolo;
+                    titolo.innerHTML = rsp[0].titolo.length > 15 ? rsp[0].titolo.substring(0,15)+"..." :  rsp[0].titolo;
                     evento.innerHTML += "<p></p><span class='m-md-4'>Data ed ora scadenza: "+rsp[0].dataOraScadenza.replace("T"," alle ")+"</span>";
                     evento.innerHTML += "<p></p><span class='m-md-4'>Tipologia: "+rsp[0].tipologia+"</span>";
                     evento.innerHTML += "<p></p><span class='m-md-4'>Posizione: "+rsp[0].posizione+"</span>";

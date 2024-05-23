@@ -195,7 +195,8 @@ const middelware = (app, connectionToDB, associazioni, io) => {
                 res.json({ result: true, link });
             } else {
                 res.json({
-                    result: false,
+                    result: true,
+                    link: conf.immagineBaseEvento
                 });
             }
         } catch (e) {

@@ -21,11 +21,11 @@ const socket = (io, connectionToDB, associazioni) => {
     };
 
     const queryGetAllUserEvents = (email, connectionToDB) => {
-        const sql = `SELECT evento.*, user.username AS proprietario FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}'`;
+        const sql = `SELECT evento.*, user.username AS proprietario FROM evento INNER JOIN user ON evento.idUser = user.id WHERE user.username = '${email}' ORDER BY evento.dataOraScadenza`;
         return connectionToDB.executeQuery(sql);
     };
     const queryEventiInvitati = (email, connectionToDB) => {
-        const sql = `SELECT evento.* FROM evento INNER JOIN invitare ON evento.id = invitare.idEvento INNER JOIN user ON user.id = invitare.idUser WHERE invitare.stato = 'accettato' AND user.username = '${email}' `;
+        const sql = `SELECT evento.* FROM evento INNER JOIN invitare ON evento.id = invitare.idEvento INNER JOIN user ON user.id = invitare.idUser WHERE invitare.stato = 'accettato' AND user.username = '${email}' ORDER BY evento.dataOraScadenza`;
         return connectionToDB.executeQuery(sql);
     };
     io.on("connection", (socket) => {
